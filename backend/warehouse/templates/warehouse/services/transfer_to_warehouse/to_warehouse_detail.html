@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Перемещение товаров детали{% endblock %}
+
+{% block content %}
+
+    <h5 class="center-align">Перемещение заказа {{ lot }} на склад {{ warehouse.name }}</h5>
+
+
+    <form method="post">
+        {% csrf_token %}
+        <input class="btn-large tale darken-4" type="submit" value="Переместить">
+
+    </form>
+    <br/>
+    {% include 'warehouse/services/transfer_to_warehouse/product_to_warehouse_table.html' with object_list=products_in_lot %}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Перемещение товаров{% endblock %}
+
+{% block content %}
+    <p>* Список закупок готовых к перемещению.</p>
+
+{% include 'warehouse/services/transfer_to_warehouse/lot_table.html' with object_list=lot_list_delivered warehouse=warehouse %}
+
+
+{% endblock %}

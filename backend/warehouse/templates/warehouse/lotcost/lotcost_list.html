@@ -1,0 +1,37 @@
+<h5 class="center-align">Список расходов <span class="badge" data-badge-caption="шт.">{{ object_list|length }}</span>
+</h5>
+
+<table class="highlight">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Дата создания</th>
+        <th>Потраченная сумма</th>
+        <th>Способ распределения</th>
+        <th>Описание</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% if object_list|length %}
+        {% for obj in object_list %}
+            <tr>
+                <td>{{ obj.pk }}</td>
+                <td><a href="{% url 'warehouse:lotcost_detail' obj.pk %}">{{ obj.date }}</a></td>
+                <td>{{ obj.amount_spent|floatformat:"g" }}</td>
+                <td>{{ obj.distribution }}</td>
+                <td>{{ obj.description|truncatewords:3 }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3">Нет данных</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>
+<br/>
+<div class="row">
+
+{#    <a href="{% url 'warehouse:lotcost_create' %}" class="waves-effect waves-light btn">Добавить</a>#}
+</div>

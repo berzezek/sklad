@@ -1,0 +1,29 @@
+<table class="highlight">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Дата создания</th>
+        <th>Статус</th>
+        <th>Описание</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% if object_list|length %}
+        {% for obj in object_list %}
+            <tr>
+                <td>{{ obj.pk }}</td>
+                <td><a href="{% url 'warehouse:lot_detail' obj.pk %}">{{ obj.date }}</a></td>
+                <td>{{ obj.status }}</td>
+                <td>{{ obj.description|truncatewords:3 }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3">Нет данных</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>
+<br/>
+<div class="row">

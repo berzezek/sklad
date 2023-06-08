@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Список закупок{% endblock %}
+
+{% block content %}
+
+    <h5 class="center-align">Список закупок <span class="badge" data-badge-caption="шт.">{{ object_list|length }}</span>
+    </h5>
+
+    {% include 'warehouse/lot/lot_table.html' with object_list=object_list %}
+
+    <a href="{% url 'warehouse:lot_create' %}" class="waves-effect waves-light btn">Добавить</a>
+    </div>
+{% endblock %}

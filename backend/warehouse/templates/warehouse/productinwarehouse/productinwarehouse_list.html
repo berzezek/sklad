@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Движение товаров на складе{% endblock %}
+
+{% block content %}
+    <h5 class="center-align">Движение товаров на складе <span class="badge"
+                                                              data-badge-caption="шт.">{{ object_list|length }}</span>
+    </h5>
+
+    <table class="highlight">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Продукт</th>
+            <th>Количество</th>
+            <th>Розничная цена</th>
+            <th>Себестоимость</th>
+            <th>Тип транзакции</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% if object_list|length %}
+            {% for obj in object_list %}
+                <tr>
+                    <td>{{ obj.pk }}</td>
+                    <td>
+                        <a href="{% url 'warehouse:productinwarehouse_detail' obj.pk %}">{{ obj.product.name }}</a>
+                    </td>
+                    <td>{{ obj.quantity }}</td>
+                    <td>{{ obj.product.retail_price|floatformat:"g" }}</td>
+                    {% if obj.transaction == 'out' or  obj.transaction == 'write_off' %}
+                        <td>-</td>
+                    {% else %}
+                        <td>{{ obj.cost_price|floatformat:"g" }}</td>
+                    {% endif %}
+                    <td>{{ obj.transaction }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">Нет данных</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+
+{% endblock %}
+```

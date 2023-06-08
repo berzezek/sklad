@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Warehouse app{% endblock %}
+{% block content %}
+    <h1 class="text-3xl">Warehouse app</h1>
+
+    <a href="{% url 'warehouse:category_list' %}">Category</a><br/>
+    <a href="{% url 'warehouse:lot_list' %}">Lot</a><br/>
+    <a href="{% url 'warehouse:warehouse_list' %}">Warehouse</a><br/>
+    <a href="{% url 'warehouse:consumer_list' %}">Consumer</a><br/>
+
+{% endblock %}

@@ -1,0 +1,39 @@
+<h5 class="center-align">Список товаров в заказе <span class="badge"
+                                                       data-badge-caption="шт.">{{ object_list|length }}</span>
+</h5>
+
+<table class="highlight">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Наименование</th>
+        <th>Количество</th>
+        <th>Розничная цена</th>
+        <th>Cумма</th>
+        <th>Вес ед.</th>
+        <th>Общий вес</th>
+        <th>Количество на складе</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% if object_list|length %}
+        {% for obj in object_list %}
+            <tr>
+                <td>{{ obj.pk }}</td>
+                <td><a href="{% url 'warehouse:productinorder_detail' obj.pk %}">{{ obj.product.name }}</a></td>
+                <td>{{ obj.quantity|floatformat:"g" }}</td>
+                <td>{{ obj.product.retail_price|floatformat:"g" }}</td>
+                <td>{{ obj.get_total_retail_price|floatformat:"g" }}</td>
+                <td>{{ obj.product.weight|floatformat:"g" }}</td>
+                <td>{{ obj.get_total_weight|floatformat:"g" }}</td>
+                <td>{{ obj.get_product_quantity_in_warehouse|floatformat:"g" }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3">Нет данных</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>

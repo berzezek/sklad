@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="">
+            <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                    <span class="card-title">{{ object }}</span>
+                    <p>{{ object.description }}</p>
+                </div>
+                <div class="card-action">
+                    <a href="{% url 'warehouse:category_list' %}">Вернуться</a>
+                    <a href="{% url 'warehouse:category_update' object.pk %}">Изменить</a>
+                    <a href="{% url 'warehouse:product_create' object.pk %}">Добавить продукт</a>
+{#                    <a href="{% url 'warehouse:category_delete' object.pk %}">Удалить</a>#}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'warehouse/product/product_list.html' with object_list=product_list %}
+
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="">
+            <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                    <span class="card-title">{{ object.name }}</span>
+                    <div class="row">
+                        <div class="col s6">
+                            <p>Общая сумма покупок</p>
+                        </div>
+                        <div class="col s6">
+                            <p>{{ object.total_cost }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <p>Уровень покупателя</p>
+                        </div>
+                        <div class="col s6">
+                            <p>{{ object.level }}</p>
+                        </div>
+                    </div>
+                    <p>{{ object.description }}</p>
+                </div>
+                <div class="card-action">
+                    <a href="{% url 'warehouse:consumer_list' %}">Вернуться</a>
+                    <a href="{% url 'warehouse:consumer_update' object.pk %}">Изменить</a>
+                    <a href="{% url 'warehouse:order_create' object.pk %}">Добавить заказ</a>
+                    <a href="{% url 'warehouse:consumer_delete' object.pk %}">Удалить</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h5 class="center-align">Список неоплаченных заказов <span class="badge"
+                                                               data-badge-caption="шт.">{{ object_list|length }}</span>
+    </h5>
+    {% include 'warehouse/order/order_list.html' with object_list=order_list %}
+{% endblock %}

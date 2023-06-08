@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="">
+            <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                    <span class="card-title">{{ object.name }}</span>
+                    <div class="row">
+                        <div class="col s6">
+                            <p>Дата создания</p>
+                        </div>
+                        <div class="col s6">
+                            <p>{{ object.date }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <p>Потраченная сумма</p>
+                        </div>
+                        <div class="col s6">
+                            <p>{{ object.amount_spent|floatformat:"g" }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <p>Способ распределения</p>
+                        </div>
+                        <div class="col s6">
+                            <p>{{ object.distribution }}</p>
+                        </div>
+                    </div>
+                    <p>{{ object.description }}</p>
+                </div>
+                <div class="card-action">
+                    <a href="{% url 'warehouse:lot_detail' object.lot.pk %}">Вернуться</a>
+                    <a href="{% url 'warehouse:lotcost_update' object.pk %}">Изменить</a>
+                    <a href="{% url 'warehouse:lotcost_delete' object.pk %}">Удалить</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

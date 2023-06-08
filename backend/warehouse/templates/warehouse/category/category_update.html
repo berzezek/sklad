@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменить {{ object }}{% endblock %}
+
+{% block content %}
+    {% include 'warehouse/block/simple_form.html' with title='Изменть категорию' button_title='Изменить' %}
+{% endblock %}
