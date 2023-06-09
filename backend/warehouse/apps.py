@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.db.models.signals import post_save
 
 
 class WarehouseConfig(AppConfig):
@@ -7,3 +8,4 @@ class WarehouseConfig(AppConfig):
 
     def ready(self):
         import warehouse.signals
+        post_save.connect(warehouse.signals.create_credit_and_out_product_in_warehouse, sender='warehouse.Order')

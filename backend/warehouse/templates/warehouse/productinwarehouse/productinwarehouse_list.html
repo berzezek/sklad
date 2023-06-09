@@ -34,7 +34,7 @@
                     {% else %}
                         <td>{{ obj.cost_price|floatformat:"g" }}</td>
                     {% endif %}
-                    <td>{{ obj.transaction }}</td>
+                    <td>{{ obj.get_transaction_display }}</td>
                 </tr>
             {% endfor %}
         {% else %}

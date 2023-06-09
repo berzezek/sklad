@@ -1,12 +1,42 @@
 {% extends 'base.html' %}
 
-{% block title %}Warehouse app{% endblock %}
+{% block title %}Приложение для склада{% endblock %}
 {% block content %}
-    <h1 class="text-3xl">Warehouse app</h1>
-
-    <a href="{% url 'warehouse:category_list' %}">Category</a><br/>
-    <a href="{% url 'warehouse:lot_list' %}">Lot</a><br/>
-    <a href="{% url 'warehouse:warehouse_list' %}">Warehouse</a><br/>
-    <a href="{% url 'warehouse:consumer_list' %}">Consumer</a><br/>
-
+    <h3 class="text-xl">Приложение для складского учета</h3>
+    <ul class="collection">
+        <li class="collection-item">Для добавления товаров перейдите в <a href="{% url 'warehouse:category_list' %}"
+                                                                          class="text-indigo-500 underline">Товары</a>
+        </li>
+        <li class="collection-item">Создайте <a href="{% url 'warehouse:lot_create' %}"
+                                                class="text-indigo-500 underline">закупку</a>, добавьте в него все
+            расходы связанные с этой закупкой
+        </li>
+        <li class="collection-item">Установите статус "Оплачен", чтобы автоматически добавить дебет, затем установите
+            статус "Доставлен", чтобы можно было пополнить склад
+        </li>
+        <li class="collection-item">Создайте <a href="{% url 'warehouse:warehouse_create' %}"
+                                                class="text-indigo-500 underline">склад</a>, теперь можно пополнить его
+            <a href="{% url 'warehouse:warehouse_create' %}" class="text-indigo-500 underline">закупками</a></li>
+        <li class="collection-item">Создайте <a href="{% url 'warehouse:consumer_create' %}"
+                                                class="text-indigo-500 underline">покупателя</a>, теперь можно создать
+            заказ
+        </li>
+        <li class="collection-item">Перейдите <a href="{% url 'warehouse:consumer_list' %}"
+                                                 class="text-indigo-500 underline">к списку покупателей</a>, выберите
+            покупателя и создайте заказ, добавьте в него продукты со склада
+        </li>
+        <li class="collection-item">Переведите статус заказа в "Оплачено" чтобы автоматически создать кредит</li>
+        <li class="collection-item">Переведите статус заказа в "Доставлен" чтобы автоматически списать товары со
+            склада
+        </li>
+        <li class="collection-item">Добавляйте <a href="{% url 'warehouse:credit_create' %}"
+                                                  class="text-indigo-500 underline">кредиты</a> или <a
+                href="{% url 'warehouse:credit_create' %}" class="text-indigo-500 underline">дебиты</a> по мере
+            надобности
+        </li>
+        <li class="collection-item">Перейдите в <a href="{% url 'warehouse:balance_list' %}"
+                                                   class="text-indigo-500 underline">баланс</a>, чтобы посмотреть баланс
+            за период
+        </li>
+    </ul>
 {% endblock %}

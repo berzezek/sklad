@@ -16,7 +16,7 @@
                 <td>{{ obj.pk }}</td>
                 <td><a href="{% url 'warehouse:order_detail' obj.pk %}">{{ obj.date }}</a></td>
                 <td>{{ obj.consumer.name }}</td>
-                <td>{{ obj.status }}</td>
+                <td>{{ obj.get_status_display }}</td>
                 <td>{{ obj.description|truncatewords:3 }}</td>
             </tr>
         {% endfor %}

@@ -125,3 +125,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MATERIALIZECSS_ICON_SET = 'fontawesome'
+
+try:
+    from .local_settings import *
+except ImportError:
+    print('You are in production mode')

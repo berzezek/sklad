@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ object }}{% endblock %}
+{% block title %}Товар в заказе {{ object.product }}{% endblock %}
 
 {% block content %}
     <div class="row">
         <div class="">
             <div class="card blue-grey darken-1">
                 <div class="card-content white-text">
-                    <span class="card-title">Товар - {{ object.product.name }}</span>
+                    <span class="card-title">Товар в заказе - {{ object.product.name }}</span>
                     <div class="row">
                         <div class="col s6">
                             <p>Количество</p>

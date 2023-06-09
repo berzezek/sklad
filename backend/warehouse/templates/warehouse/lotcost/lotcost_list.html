@@ -19,7 +19,7 @@
                 <td>{{ obj.pk }}</td>
                 <td><a href="{% url 'warehouse:lotcost_detail' obj.pk %}">{{ obj.date }}</a></td>
                 <td>{{ obj.amount_spent|floatformat:"g" }}</td>
-                <td>{{ obj.distribution }}</td>
+                <td>{{ obj.get_distribution_display }}</td>
                 <td>{{ obj.description|truncatewords:3 }}</td>
             </tr>
         {% endfor %}

@@ -25,7 +25,7 @@
                     <td>{{ obj.pk }}</td>
                     <td><a href="{% url 'warehouse:consumer_detail' obj.pk %}">{{ obj.name }}</a></td>
                     <td>{{ obj.description|truncatewords:3 }}</td>
-                    <td>{{ obj.total_cost }}</td>
+                    <td>{{ obj.total_cost|floatformat:"g" }}</td>
                     <td>{{ obj.level }}</td>
                 </tr>
             {% endfor %}

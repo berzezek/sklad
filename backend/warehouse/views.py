@@ -1,4 +1,5 @@
-from django.db.models import Sum, F, Subquery, OuterRef, Case, When
+from datetime import date
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
@@ -31,7 +32,6 @@ from .models import (
     ProductInOrder,
     Debit,
     Credit,
-    Balance
 )
 
 
@@ -455,6 +455,11 @@ class OrderCreateView(CreateView):
     def get_success_url(self):
         return reverse_lazy('warehouse:consumer_detail', kwargs={'pk': self.kwargs[ 'consumer_id' ]})
 
+    def form_valid(self, form):
+        consumer_id = self.kwargs[ 'consumer_id' ]
+        consumer = Consumer.objects.get(pk=consumer_id)
+        form.instance.consumer = consumer
+        return super().form_valid(form)
 
 class OrderDetailView(DetailView):
     model = Order
@@ -464,6 +469,7 @@ class OrderDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context[ 'productinorder_list' ] = ProductInOrder.objects.filter(order=self.object)
         return context
+
 
 
 class OrderUpdateView(UpdateView):
@@ -496,7 +502,6 @@ class ProductInOrderCreateView(CreateView):
     form_class = ProductInOrderForm
     template_name = 'warehouse/productinorder/productinorder_create.html'
     success_url = reverse_lazy('warehouse:productinorder_list')
-
 
     def get_success_url(self):
         return reverse_lazy('warehouse:order_detail', kwargs={'pk': self.object.order.pk})
@@ -551,13 +556,13 @@ class DebitUpdateView(UpdateView):
     model = Debit
     template_name = 'warehouse/debit/debit_update.html'
     form_class = DebitForm
-    success_url = reverse_lazy('warehouse:debit_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 class DebitDeleteView(DeleteView):
     model = Debit
     template_name = 'warehouse/debit/debit_delete.html'
-    success_url = reverse_lazy('warehouse:debit_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 class CreditListView(ListView):
@@ -569,7 +574,7 @@ class CreditCreateView(CreateView):
     model = Credit
     form_class = CreditForm
     template_name = 'warehouse/credit/credit_create.html'
-    success_url = reverse_lazy('warehouse:credit_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 class CreditDetailView(DetailView):
@@ -581,7 +586,7 @@ class CreditUpdateView(UpdateView):
     model = Credit
     template_name = 'warehouse/credit/credit_update.html'
     form_class = CreditForm
-    success_url = reverse_lazy('warehouse:credit_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 class CreditDeleteView(DeleteView):
@@ -590,31 +595,35 @@ class CreditDeleteView(DeleteView):
     success_url = reverse_lazy('warehouse:credit_list')
 
 
-class BalanceListView(ListView):
-    model = Balance
-    template_name = 'warehouse/balance/balance_list.html'
+def get_balance_by_date(request):
+    form = BalanceForm()
+    debits = None
+    credits = None
+    balance = None
+    credits_all = Debit.objects.all()
+    debits_all = Credit.objects.all()
+    balance_all = (debits_all.aggregate(Sum('amount'))['amount__sum'] or 0) - (credits_all.aggregate(Sum('amount'))['amount__sum'] or 0)
 
+    if request.method == 'GET':
+        today = date.today()
+        start_of_month = date(today.year, today.month, 1)
+        debits = Debit.objects.filter(date__gte=start_of_month)
+        credits = Credit.objects.filter(date__gte=start_of_month)
+        balance = (credits.aggregate(Sum('amount'))['amount__sum'] or 0) - (debits.aggregate(Sum('amount'))['amount__sum'] or 0)
 
-class BalanceCreateView(CreateView):
-    model = Balance
-    form_class = BalanceForm
-    template_name = 'warehouse/balance/balance_create.html'
-    success_url = reverse_lazy('warehouse:balance_list')
+    elif request.method == 'POST':
+        form = BalanceForm(request.POST)
+        if form.is_valid():
+            date_from = form.cleaned_data['date_from']
+            date_to = form.cleaned_data['date_to']
+            debits = Debit.objects.filter(date__gte=date_from, date__lte=date_to)
+            credits = Credit.objects.filter(date__gte=date_from, date__lte=date_to)
+            balance = (credits.aggregate(Sum('amount'))['amount__sum'] or 0) - (debits.aggregate(Sum('amount'))['amount__sum'] or 0)
 
-
-class BalanceDetailView(DetailView):
-    model = Balance
-    template_name = 'warehouse/balance/balance_detail.html'
-
-
-class BalanceUpdateView(UpdateView):
-    model = Balance
-    template_name = 'warehouse/balance/balance_update.html'
-    form_class = BalanceForm
-    success_url = reverse_lazy('warehouse:balance_list')
-
-
-class BalanceDeleteView(DeleteView):
-    model = Balance
-    template_name = 'warehouse/balance/balance_delete.html'
-    success_url = reverse_lazy('warehouse:balance_list')
+    return render(request, 'warehouse/balance/balance_list.html', {
+        'form': form,
+        'debits': debits,
+        'credits': credits,
+        'balance': balance,
+        'balance_all': balance_all,
+    })

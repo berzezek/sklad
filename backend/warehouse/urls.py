@@ -66,23 +66,18 @@ from .views import (
     ProductInOrderUpdateView,
     ProductInOrderDeleteView,
 
-    DebitListView,
     DebitCreateView,
     DebitDetailView,
     DebitUpdateView,
     DebitDeleteView,
 
-    CreditListView,
     CreditCreateView,
     CreditDetailView,
     CreditUpdateView,
     CreditDeleteView,
 
-    BalanceListView,
-    BalanceCreateView,
-    BalanceDetailView,
-    BalanceUpdateView,
-    BalanceDeleteView,
+    get_balance_by_date
+
 )
 
 app_name = 'warehouse'
@@ -156,26 +151,20 @@ urlpatterns = [
          name='productinorder_update'),
     path('productinorder/<int:pk>/delete/', ProductInOrderDeleteView.as_view(), name='productinorder_delete'),
 
-    path('debit/list/', DebitListView.as_view(), name='debit_list'),
     path('debit/create/', DebitCreateView.as_view(), name='debit_create'),
     path('debit/<int:pk>/', DebitDetailView.as_view(), name='debit_detail'),
     path('debit/<int:pk>/update/', DebitUpdateView.as_view(), name='debit_update'),
     path('debit/<int:pk>/delete/', DebitDeleteView.as_view(), name='debit_delete'),
 
-    path('credit/list/', CreditListView.as_view(), name='credit_list'),
     path('credit/create/', CreditCreateView.as_view(), name='credit_create'),
     path('credit/<int:pk>/', CreditDetailView.as_view(), name='credit_detail'),
     path('credit/<int:pk>/update/', CreditUpdateView.as_view(), name='credit_update'),
     path('credit/<int:pk>/delete/', CreditDeleteView.as_view(), name='credit_delete'),
 
-    path('balance/list/', BalanceListView.as_view(), name='balance_list'),
-    path('balance/create/', BalanceCreateView.as_view(), name='balance_create'),
-    path('balance/<int:pk>/', BalanceDetailView.as_view(), name='balance_detail'),
-    path('balance/<int:pk>/update/', BalanceUpdateView.as_view(), name='balance_update'),
-    path('balance/<int:pk>/delete/', BalanceDeleteView.as_view(), name='balance_delete'),
-
     path('services/transfer/<int:warehouse_id>/', warehouse.lot_to_warehouse,
          name='lot_to_warehouse'),
     path('services/transfer/<int:warehouse_id>/<int:lot_id>/', warehouse.lot_to_warehouse_detail,
-            name='lot_to_warehouse_detail'),
+         name='lot_to_warehouse_detail'),
+
+    path('balance/list/', get_balance_by_date, name='balance_list'),
 ]

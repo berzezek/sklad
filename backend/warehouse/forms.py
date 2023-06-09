@@ -1,4 +1,7 @@
+from datetime import date
+
 from django import forms
+from django.utils.timezone import now
 
 from .models import (
     Category,
@@ -13,7 +16,6 @@ from .models import (
     ProductInOrder,
     Debit,
     Credit,
-    Balance,
 )
 
 
@@ -73,7 +75,7 @@ class ConsumerForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = '__all__'
+        exclude = [ 'consumer' ]
 
 
 class ProductInOrderForm(forms.ModelForm):
@@ -85,16 +87,18 @@ class ProductInOrderForm(forms.ModelForm):
 class DebitForm(forms.ModelForm):
     class Meta:
         model = Debit
+        # exclude = [ 'date' ]
         fields = '__all__'
 
 
 class CreditForm(forms.ModelForm):
     class Meta:
         model = Credit
+        # exclude = [ 'date' ]
         fields = '__all__'
 
-
-class BalanceForm(forms.ModelForm):
-    class Meta:
-        model = Balance
-        fields = '__all__'
+class BalanceForm(forms.Form):
+    current_date = now().date()  # Получить текущую дату
+    first_day_of_month = date(current_date.year, current_date.month, 1)
+    date_from = forms.DateField(label='Дата начала периода', initial=first_day_of_month)
+    date_to = forms.DateField(label='Дата конца периода', initial=current_date)

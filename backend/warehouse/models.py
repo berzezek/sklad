@@ -86,11 +86,8 @@ class Lot(models.Model):
     STATUS_CHOICES = [
         ('new', 'новый'),
         ('paid', 'оплачен'),
-        ('shipped', 'отправлен'),
         ('delivered', 'доставлен'),
         ('delivered_to_warehouse', 'доставлен на склад'),
-        ('canceled', 'отменен'),
-        ('returned', 'возврат')
     ]
 
     date = models.DateField(verbose_name='Дата создания', auto_now_add=True)
@@ -142,7 +139,7 @@ class Warehouse(models.Model):
         return sum([ p.get_total_retail_price() for p in self.productinwarehouse_set.all() ])
 
     def get_product_count(self):
-        return self.productinwarehouse_set.count()
+        return self.productinwarehouse_set.values('product').distinct().count()
 
     def __str__(self):
         return f"{self.name}"
@@ -219,9 +216,6 @@ class Order(models.Model):
         ('new', 'новый'),
         ('paid', 'оплачен'),
         ('shipped', 'отправлен'),
-        ('delivered', 'доставлен'),
-        ('canceled', 'отменен'),
-        ('returned', 'возврат')
     ]
     date = models.DateField(auto_now_add=True)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
@@ -279,24 +273,23 @@ class ProductInOrder(models.Model):
 """
 
 
-class AbstractMovementFunds(models.Model):
+class Credit(models.Model):
+    name = models.CharField(verbose_name='Наименование', max_length=32)
+    description = models.TextField(verbose_name='Описание', null=True, blank=True)
+    amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
+    date = models.DateField(verbose_name='Дата создания', default=timezone.now)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f"Кредит - {self.name}"
+
+
+class Debit(models.Model):
     name = models.CharField(max_length=32)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
     date = models.DateField(verbose_name='Дата создания', default=timezone.now)
-
-
-class Credit(AbstractMovementFunds):
     history = HistoricalRecords()
 
-
-class Debit(AbstractMovementFunds):
-    history = HistoricalRecords()
-
-
-class Balance(models.Model):
-    credit = models.ManyToManyField(Credit, verbose_name='Кредит')
-    debit = models.ManyToManyField(Debit, verbose_name='Дебет')
-    total_amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
-    period = models.CharField(verbose_name='Период', max_length=32)
-    year = models.IntegerField(verbose_name='Год')
+    def __str__(self):
+        return f"Дебит - {self.name}"
