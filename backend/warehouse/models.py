@@ -78,6 +78,10 @@ class LotCost(models.Model):
         distribution_display = dict(self.DISTRIBUTION_CHOICES)
         return distribution_display.get(self.distribution, self.distribution)
 
+    def get_display_name(self):
+        name_display = dict(self.LOT_COST_CHOICES)
+        return name_display.get(self.name, self.name)
+
     def __str__(self):
         return f"{self.date} - {self.amount_spent}"
 

@@ -14,12 +14,13 @@
                     <a href="{% url 'warehouse:category_list' %}">Вернуться</a>
                     <a href="{% url 'warehouse:category_update' object.pk %}">Изменить</a>
                     <a href="{% url 'warehouse:product_create' object.pk %}">Добавить продукт</a>
-{#                    <a href="{% url 'warehouse:category_delete' object.pk %}">Удалить</a>#}
+                    <a href="{% url 'warehouse:category_detail' object.pk %}?format=csv">Скачать в CSV</a>
                 </div>
             </div>
         </div>
     </div>
 
     {% include 'warehouse/product/product_list.html' with object_list=product_list %}
+
 
 {% endblock %}

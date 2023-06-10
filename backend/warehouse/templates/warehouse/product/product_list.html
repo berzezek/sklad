@@ -30,10 +30,3 @@
     {% endif %}
     </tbody>
 </table>
-<br />
-<div class="row">
-    <form method="post" name="product_csv" action="{% url 'warehouse:product_to_csv' %}">
-        {% csrf_token %}
-        <input class="btn green darken-4" type="submit" value="Скачать список">
-    </form>
-</div>

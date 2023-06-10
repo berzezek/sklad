@@ -1,8 +1,12 @@
+import csv
 from datetime import date
+from urllib.parse import quote
 
 from django.db.models import Sum, F, Subquery, OuterRef, Case, When
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils.timezone import now
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
 
 from .forms import (
@@ -60,6 +64,25 @@ class CategoryDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context[ 'product_list' ] = Product.objects.filter(category=self.kwargs[ 'pk' ])
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if 'format' in self.request.GET and self.request.GET[ 'format' ] == 'csv':
+
+            filename = f'Справочник продуктов от {now().strftime("%Y-%m-%d")}.csv'
+            response = HttpResponse(content_type='text/csv')
+            response[ 'Content-Disposition' ] = f'attachment; filename*=UTF-8\'\'{quote(filename)}'
+
+            writer = csv.writer(response)
+            writer.writerow([ "#", "Наименование", "Розничная цена", "Вес кг." ])
+
+            products = context[ 'product_list' ]
+            for product in products:
+                writer.writerow([ product.id, product.name, product.retail_price, product.weight ])
+            writer.writerow([ ])  # Пустая строка
+            writer.writerow([ '', 'Ответственный', '______', 'Иванов А.Н' ])
+            writer.writerow([ '', 'Принял', '______', 'Петров К.Е.' ])
+            return response
+        return super().render_to_response(context, **response_kwargs)
 
 
 class CategoryUpdateView(UpdateView):
@@ -245,6 +268,39 @@ class LotDetailView(DetailView):
         context[ 'lotcost_list' ] = LotCost.objects.filter(lot=self.object)
         context[ 'history' ] = self.object.history.all()[ ::-1 ]
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if 'format' in self.request.GET and self.request.GET[ 'format' ] == 'csv':
+            filename = f'Лот_{self.object.pk}_от_{now().strftime("%Y-%m-%d")}.csv'
+            response = HttpResponse(content_type='text/csv')
+            response[ 'Content-Disposition' ] = f'attachment; filename*=UTF-8\'\'{quote(filename)}'
+
+            writer = csv.writer(response)
+            writer.writerow([ "", "Список продуктов в лоте" ])
+            writer.writerow([ "#", "Наименование товара", "Количество", "Стоимость" ])
+
+            productinlot_list = context[ 'productinlot_list' ]
+            for productinlot in productinlot_list:
+                writer.writerow(
+                    [ productinlot.pk, productinlot.product.name, productinlot.quantity, productinlot.purchase_price ])
+
+            writer.writerow([ ])
+            writer.writerow([ "", "Список расходов по лоту" ])
+            writer.writerow([ "#", "Наименование расхода", "Стоимость", "Дата" ])
+            lotcost_list = context[ 'lotcost_list' ]
+            for lotcost in lotcost_list:
+                writer.writerow([ lotcost.pk, lotcost.get_display_name, lotcost.amount_spent, lotcost.date ])
+
+            writer.writerow([ ])
+            writer.writerow([ "", "История изменений статуса лота" ])
+            writer.writerow([ "#", "Статус", "Дата" ])
+            history = context[ 'history' ]
+            for i in history:
+                writer.writerow([ i.pk, i.get_status_display, i.date ])
+
+            return response
+
+        return super().render_to_response(context, **response_kwargs)
 
 
 class LotUpdateView(UpdateView):
@@ -620,7 +676,7 @@ def get_balance_by_date(request):
     credits_all = Debit.objects.all()
     debits_all = Credit.objects.all()
     balance_all = (debits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
-                credits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
+            credits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     if request.method == 'GET':
         today = date.today()
@@ -628,7 +684,7 @@ def get_balance_by_date(request):
         debits = Debit.objects.filter(date__gte=start_of_month)
         credits = Credit.objects.filter(date__gte=start_of_month)
         balance = (credits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
-                    debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
+                debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     elif request.method == 'POST':
         form = BalanceForm(request.POST)
@@ -638,7 +694,7 @@ def get_balance_by_date(request):
             debits = Debit.objects.filter(date__gte=date_from, date__lte=date_to)
             credits = Credit.objects.filter(date__gte=date_from, date__lte=date_to)
             balance = (credits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
-                        debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
+                    debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     return render(request, 'warehouse/balance/balance_list.html', {
         'form': form,

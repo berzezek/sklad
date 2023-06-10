@@ -64,6 +64,7 @@
                     <a href="{% url 'warehouse:productinlot_create' object.pk %}">Добавить товар</a>
                     <a href="{% url 'warehouse:lotcost_create' object.pk %}">Дабавить расход</a>
                     <a href="{% url 'warehouse:lot_delete' object.pk %}">Удалить</a>
+                    <a href="{% url 'warehouse:lot_detail' object.pk %}?format=csv">Скачать в CSV</a>
                 </div>
             </div>
         </div>
@@ -86,6 +87,7 @@
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list %}
+
 
             </div>
         </li>
