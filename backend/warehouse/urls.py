@@ -2,6 +2,7 @@ from django.urls import path
 
 from .services import (
     warehouse,
+    csv,
 )
 from .views import (
     index,
@@ -167,4 +168,6 @@ urlpatterns = [
          name='lot_to_warehouse_detail'),
 
     path('balance/list/', get_balance_by_date, name='balance_list'),
+
+    path('product_to_csv/', csv.product_to_csv, name='product_to_csv'),
 ]
