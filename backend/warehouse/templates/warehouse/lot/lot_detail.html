@@ -68,8 +68,43 @@
             </div>
         </div>
     </div>
+    <nav class="blue-grey darken-1">
+        <div class="nav-wrapper container">
+            <div class="col s12">
+                {% for obj in history %}
+                    <span class="breadcrumb">{{ obj.history_date|date:"d M h:m" }} - {{ obj.get_status_display }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </nav>
+    <br/>
 
-    {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list %}
-    {% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
+    <ul class="collapsible">
+        <li>
+            <div class="collapsible-header"><i class="material-icons">input</i>
+                Товары в заказе <span class="badge" data-badge-caption="шт.">{{ productinlot_list|length }}</span>
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list %}
 
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header"><i class="material-icons">attach_money</i>
+                Расходы заказа <span class="badge" data-badge-caption="шт.">{{ lotcost_list|length }}</span>
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
+            </div>
+        </li>
+    </ul>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            $('.collapsible').collapsible();
+        });
+    </script>
 {% endblock %}

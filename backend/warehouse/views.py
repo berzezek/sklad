@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.db.models import Sum, F, Subquery, OuterRef, Case, When
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
@@ -151,6 +152,13 @@ class ProductInLotDetailView(DetailView):
     model = ProductInLot
     template_name = 'warehouse/productinlot/productinlot_detail.html'
 
+    def get_context_data(self, **kwargs):
+        for i in self.object.history.all():
+            print(i)
+        context = super().get_context_data(**kwargs)
+        context[ 'history' ] = self.object.history.all()
+        return context
+
 
 class ProductInLotDeleteView(DeleteView):
     model = ProductInLot
@@ -235,7 +243,7 @@ class LotDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context[ 'productinlot_list' ] = ProductInLot.objects.filter(lot=self.object)
         context[ 'lotcost_list' ] = LotCost.objects.filter(lot=self.object)
-        context[ 'history' ] = Lot.history.all()
+        context[ 'history' ] = self.object.history.all()[ ::-1 ]
         return context
 
 
@@ -244,6 +252,18 @@ class LotUpdateView(UpdateView):
     template_name = 'warehouse/lot/lot_update.html'
     fields = '__all__'
     success_url = reverse_lazy('warehouse:lot_list')
+
+    def form_valid(self, form):
+        if form.instance.history.first().status == 'delivered':
+            # сообщение в форме об ошибке
+            form.add_error(None, 'Нельзя изменить лот, который уже доставлен')
+            return super().form_invalid(form)
+        elif form.instance.history.first().status == 'paid':
+            if form.instance.status == 'paid':
+                # сообщение в форме об ошибке
+                form.add_error(None, 'Нельзя изменить статус лота на "оплачен", т.к. он уже оплачен')
+                return super().form_invalid(form)
+        return super().form_valid(form)
 
 
 class LotDeleteView(DeleteView):
@@ -262,9 +282,6 @@ class WarehouseCreateView(CreateView):
     form_class = WarehouseForm
     template_name = 'warehouse/warehouse/warehouse_create.html'
     success_url = reverse_lazy('warehouse:warehouse_list')
-
-
-from django.db.models import Sum, F, Subquery, OuterRef, Case, When
 
 
 class WarehouseDetailView(DetailView):
@@ -461,6 +478,7 @@ class OrderCreateView(CreateView):
         form.instance.consumer = consumer
         return super().form_valid(form)
 
+
 class OrderDetailView(DetailView):
     model = Order
     template_name = 'warehouse/order/order_detail.html'
@@ -469,7 +487,6 @@ class OrderDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context[ 'productinorder_list' ] = ProductInOrder.objects.filter(order=self.object)
         return context
-
 
 
 class OrderUpdateView(UpdateView):
@@ -602,23 +619,26 @@ def get_balance_by_date(request):
     balance = None
     credits_all = Debit.objects.all()
     debits_all = Credit.objects.all()
-    balance_all = (debits_all.aggregate(Sum('amount'))['amount__sum'] or 0) - (credits_all.aggregate(Sum('amount'))['amount__sum'] or 0)
+    balance_all = (debits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
+                credits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     if request.method == 'GET':
         today = date.today()
         start_of_month = date(today.year, today.month, 1)
         debits = Debit.objects.filter(date__gte=start_of_month)
         credits = Credit.objects.filter(date__gte=start_of_month)
-        balance = (credits.aggregate(Sum('amount'))['amount__sum'] or 0) - (debits.aggregate(Sum('amount'))['amount__sum'] or 0)
+        balance = (credits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
+                    debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     elif request.method == 'POST':
         form = BalanceForm(request.POST)
         if form.is_valid():
-            date_from = form.cleaned_data['date_from']
-            date_to = form.cleaned_data['date_to']
+            date_from = form.cleaned_data[ 'date_from' ]
+            date_to = form.cleaned_data[ 'date_to' ]
             debits = Debit.objects.filter(date__gte=date_from, date__lte=date_to)
             credits = Credit.objects.filter(date__gte=date_from, date__lte=date_to)
-            balance = (credits.aggregate(Sum('amount'))['amount__sum'] or 0) - (debits.aggregate(Sum('amount'))['amount__sum'] or 0)
+            balance = (credits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
+                        debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     return render(request, 'warehouse/balance/balance_list.html', {
         'form': form,
