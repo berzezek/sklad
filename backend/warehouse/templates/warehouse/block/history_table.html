@@ -1,0 +1,32 @@
+{#<table class="highlight">#}
+{#    <thead>#}
+{#    <tr>#}
+{#        <th>#</th>#}
+{#        <th>Дата создания</th>#}
+{#        <th>Статус</th>#}
+{#        <th>Описание</th>#}
+{#    </tr>#}
+{#    </thead>#}
+{##}
+{#    <tbody>#}
+{#    {% if object_list|length %}#}
+{#        {% for obj in object_list %}#}
+{#            {{ obj }}#}
+{#            <tr>#}
+{#                <td>{{ obj.pk }}</td>#}
+{#                <td><a href="{% url 'warehouse:lot_detail' obj.pk %}">{{ obj.date }}</a></td>#}
+{#                <td>{{ obj.get_status_display }}</td>#}
+{#                <td>{{ obj.description|truncatewords:3 }}</td>#}
+{#            </tr>#}
+{#        {% endfor %}#}
+{#    {% else %}#}
+{#        <tr>#}
+{#            <td colspan="3">Нет данных</td>#}
+{#        </tr>#}
+{#    {% endif %}#}
+{#    </tbody>#}
+{#</table>#}
+
+{% for obj in object_list %}
+<p>{{ obj.history_date|date:"d M h:m" }} - {{ obj.get_status_display }}</p>
+{% endfor %}

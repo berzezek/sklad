@@ -120,7 +120,7 @@ class Lot(models.Model):
             raise ValidationError('Так принимать заказы на склад нельзя! перейдите на склад и примите заказ там!')
 
     def __str__(self):
-        return f"{self.date} {self.status}"
+        return f"{self.date} - {self.get_status_display()}"
 
 
 """
@@ -158,7 +158,6 @@ class ProductInWarehouse(models.Model):
     quantity = models.DecimalField(verbose_name='Количество', max_digits=10, decimal_places=2, null=True)
     cost_price = models.DecimalField(verbose_name='Себестоимость', max_digits=10, decimal_places=2, null=True)
     transaction = models.CharField(verbose_name='Транзакция', max_length=10, choices=TRANSACTION_CHOICES)
-    history = HistoricalRecords()
 
     def get_total_cost_price(self):
         if self.transaction in [ 'in', 'return' ]:
