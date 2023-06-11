@@ -328,7 +328,6 @@ class LotUpdateView(UpdateView):
     success_url = reverse_lazy('warehouse:lot_list')
 
     def form_valid(self, form):
-        print
         if form.instance.history.first().status == 'delivered':
             form.add_error(None, 'Нельзя изменить лот, который уже доставлен')
             return super().form_invalid(form)
