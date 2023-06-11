@@ -21,7 +21,33 @@
             </div>
         </div>
     </div>
-    {% include 'warehouse/credit/credit_list.html' with object_list=credits %}
-    {% include 'warehouse/debit/debit_list.html' with object_list=debits %}
 
+
+    <ul class="collapsible">
+        <li>
+            <div class="collapsible-header"><i class="material-icons">input</i>
+                Кредиты <span class="badge" data-badge-caption="шт.">{{ credits|length }}</span>
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/credit/credit_list.html' with object_list=credits %}
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header"><i class="material-icons">attach_money</i>
+                Дебиты <span class="badge" data-badge-caption="шт.">{{ debits|length }}</span>
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/debit/debit_list.html' with object_list=debits %}
+            </div>
+        </li>
+    </ul>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            $('.collapsible').collapsible();
+        });
+    </script>
 {% endblock %}

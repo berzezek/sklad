@@ -2,7 +2,7 @@ import csv
 from datetime import date
 from urllib.parse import quote
 
-from django.db.models import Sum, F, Subquery, OuterRef, Case, When
+from django.db.models import Sum, F, Subquery, OuterRef, Case, When, Q
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -250,6 +250,24 @@ class LotListView(ListView):
     model = Lot
     template_name = 'warehouse/lot/lot_list.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        excluded_lot_costs = []
+        for lot in context['object_list']:
+            if lot.status == 'paid':
+                existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {lot.pk} на лот')
+                                                       | Q(name__startswith=f'Оплата лота {lot.pk}'))
+
+                existing_debit_names = [debit.name for debit in existing_debits]
+
+                lot_costs = lot.lotcost_set.exclude(name__in=existing_debit_names)
+
+                excluded_lot_costs.extend(lot_costs)
+
+        context['excluded_lot_costs'] = excluded_lot_costs
+
+        return context
 
 class LotCreateView(CreateView):
     model = Lot
@@ -311,14 +329,42 @@ class LotUpdateView(UpdateView):
 
     def form_valid(self, form):
         if form.instance.history.first().status == 'delivered':
-            # сообщение в форме об ошибке
             form.add_error(None, 'Нельзя изменить лот, который уже доставлен')
             return super().form_invalid(form)
         elif form.instance.history.first().status == 'paid':
             if form.instance.status == 'paid':
-                # сообщение в форме об ошибке
-                form.add_error(None, 'Нельзя изменить статус лота на "оплачен", т.к. он уже оплачен')
-                return super().form_invalid(form)
+                # Получаем уже существующие затраты в Debit, связанные с лотом
+                existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {form.instance.pk} на лот')
+                                                       | Q(name__startswith=f'Оплата лота {form.instance.pk}'))
+
+                existing_debit_names = [ debit.name for debit in existing_debits ]
+
+                # Проверяем, существует ли уже запись для оплаты лота
+                existing_payment_debit = Debit.objects.filter(name=f'Оплата лота {form.instance.pk}').exists()
+
+                if not existing_payment_debit:
+                    # Создаем объект Debit только если его еще нет
+                    name = f'Оплата лота {form.instance.pk}'
+                    description = f'Оплата за товары лота #{form.instance.pk} от {form.instance.date}'
+                    amount = form.instance.get_total_lot_purchase_price()
+                    date = form.instance.date
+                    Debit.objects.create(name=name, description=description, amount=amount, date=date)
+
+                # Создаем затраты в Debit только для тех расходов, которые ранее не были добавлены
+                lot_costs = form.instance.lotcost_set.exclude(name__in=existing_debit_names)
+                for lot_cost in lot_costs:
+                    # Проверяем, существует ли уже запись для данного расхода на лот
+                    existing_debit = Debit.objects.filter(
+                        name=f'Затраты {lot_cost.pk} на лот #{form.instance.pk}').exists()
+
+                    if not existing_debit:
+                        # Создаем объект Debit только если его еще нет
+                        name = f'Затраты {lot_cost.pk} на лот #{form.instance.pk}'
+                        description = f'Затраты #{lot_cost.pk} ({lot_cost.get_display_name()}) от {lot_cost.date} ' \
+                                      f'на лот #{form.instance.pk} от {form.instance.date}'
+                        amount = lot_cost.amount_spent
+                        date = lot_cost.date
+                        Debit.objects.create(name=name, description=description, amount=amount, date=date)
         return super().form_valid(form)
 
 
@@ -553,6 +599,18 @@ class OrderUpdateView(UpdateView):
     def get_success_url(self):
         return reverse_lazy('warehouse:consumer_detail', kwargs={'pk': self.object.consumer.id})
 
+    def form_valid(self, form):
+        if form.instance.history.first().status == 'shipped':
+            # сообщение в форме об ошибке
+            form.add_error(None, 'Нельзя изменить заказ, который уже отправлен')
+            return super().form_invalid(form)
+        elif form.instance.history.first().status == 'paid':
+            if form.instance.status == 'paid':
+                # сообщение в форме об ошибке
+                form.add_error(None, 'Нельзя изменить статус заказа на "оплачен", т.к. он уже оплачен')
+                return super().form_invalid(form)
+        return super().form_valid(form)
+
 
 class OrderDeleteView(DeleteView):
     model = Order
@@ -688,6 +746,7 @@ def get_balance_by_date(request):
 
     elif request.method == 'POST':
         form = BalanceForm(request.POST)
+
         if form.is_valid():
             date_from = form.cleaned_data[ 'date_from' ]
             date_to = form.cleaned_data[ 'date_to' ]

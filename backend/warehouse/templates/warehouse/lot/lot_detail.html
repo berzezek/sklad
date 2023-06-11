@@ -73,7 +73,7 @@
         <div class="nav-wrapper container">
             <div class="col s12">
                 {% for obj in history %}
-                    <span class="breadcrumb">{{ obj.history_date|date:"d M h:m" }} - {{ obj.get_status_display }}</span>
+                    <span class="breadcrumb">{{ obj.history_date|date:"d M h:m" }} - {{ obj.get_status_display|capfirst }}</span>
                 {% endfor %}
             </div>
         </div>

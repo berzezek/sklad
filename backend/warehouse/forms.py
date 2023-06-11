@@ -39,7 +39,12 @@ class ProductForm(forms.ModelForm):
 class ProductInLotForm(forms.ModelForm):
     class Meta:
         model = ProductInLot
-        exclude = [ 'lot' ]
+        fields = (
+            'product',
+            'quantity',
+            'purchase_price',
+            'description'
+        )
 
 
 class LotCostForm(forms.ModelForm):

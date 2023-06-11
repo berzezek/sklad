@@ -24,11 +24,12 @@ class Product(models.Model):
     retail_price = models.DecimalField(verbose_name='Розничная цена', max_digits=10, decimal_places=2)
     history = HistoricalRecords()
 
+
     def is_available_in_warehouse(self):
         return ProductInWarehouse.objects.filter(product=self).exists()
 
     def __str__(self):
-        return f'{self.name} ({self.weight}) - {self.retail_price}'
+        return f'{self.name} ({round(self.weight)} кг.) - {round(self.retail_price)}'
 
 
 """
@@ -37,7 +38,7 @@ class Product(models.Model):
 
 
 class ProductInLot(models.Model):
-    product = models.ForeignKey(Product, verbose_name='Продукт', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, verbose_name='Товар', on_delete=models.CASCADE)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     quantity = models.DecimalField(verbose_name='Количество', max_digits=10, decimal_places=2)
     purchase_price = models.DecimalField(verbose_name='Закупочная цена', max_digits=10, decimal_places=2)
@@ -51,7 +52,7 @@ class ProductInLot(models.Model):
         return self.quantity*self.product.weight
 
     def __str__(self):
-        return f"{self.product.product.name} - {self.quantity} - {self.purchase_price}"
+        return f"{self.product.product.name} - {self.quantity} - {round(self.purchase_price)}"
 
 
 class LotCost(models.Model):
@@ -83,7 +84,7 @@ class LotCost(models.Model):
         return name_display.get(self.name, self.name)
 
     def __str__(self):
-        return f"{self.date} - {self.amount_spent}"
+        return f"{self.date} - {round(self.amount_spent)}"
 
 
 class Lot(models.Model):
@@ -211,7 +212,7 @@ class Consumer(models.Model):
     level = models.IntegerField(verbose_name='Уровень', default=1)
 
     def __str__(self):
-        return f"{self.name} - {self.total_cost}"
+        return f"{self.name} - {round(self.total_cost)}"
 
 
 class Order(models.Model):
@@ -268,7 +269,7 @@ class ProductInOrder(models.Model):
             raise ValidationError(f"Продукт {self.product} недоступен на складе.")
 
     def __str__(self):
-        return f"{self.product} - {self.quantity} - {self.product.retail_price}"
+        return f"{self.product} - {self.quantity} - {round(self.product.retail_price)}"
 
 
 """
@@ -284,15 +285,15 @@ class Credit(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"Кредит - {self.name}"
+        return f"Кредит {self.name} - {round(self.amount)}"
 
 
 class Debit(models.Model):
-    name = models.CharField(max_length=32)
+    name = models.CharField(verbose_name='Наименование', max_length=32)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
     date = models.DateField(verbose_name='Дата создания', default=timezone.now)
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"Дебит - {self.name}"
+        return f"Дебит {self.name} - {round(self.amount)}"
