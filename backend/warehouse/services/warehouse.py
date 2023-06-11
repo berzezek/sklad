@@ -87,7 +87,7 @@ def lot_to_warehouse_detail(request, warehouse_id=None, lot_id=None):
                 cost_price=pil[ 'cost_price' ],
                 transaction='in',
             )
-        lot.status = 'in_warehouse'
+        lot.status = 'delivered_to_warehouse'
         lot.save()
         return redirect('warehouse:warehouse_list')
 

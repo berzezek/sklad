@@ -69,16 +69,6 @@
             </div>
         </div>
     </div>
-    <nav class="blue-grey darken-1">
-        <div class="nav-wrapper container">
-            <div class="col s12">
-                {% for obj in history %}
-                    <span class="breadcrumb">{{ obj.history_date|date:"d M h:m" }} - {{ obj.get_status_display|capfirst }}</span>
-                {% endfor %}
-            </div>
-        </div>
-    </nav>
-    <br/>
 
     <ul class="collapsible">
         <li>
@@ -97,6 +87,16 @@
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header"><i class="material-icons">time</i>
+                История изменения заказа</span>
+            </div>
+            <div class="collapsible-body">
+                {% for obj in history %}
+                    <p class="black-text">{{ obj.history_date|date:"d M h:m" }} - {{ obj.get_status_display|capfirst }}</p>
+                {% endfor %}
             </div>
         </li>
     </ul>

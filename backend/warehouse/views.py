@@ -328,6 +328,7 @@ class LotUpdateView(UpdateView):
     success_url = reverse_lazy('warehouse:lot_list')
 
     def form_valid(self, form):
+        print
         if form.instance.history.first().status == 'delivered':
             form.add_error(None, 'Нельзя изменить лот, который уже доставлен')
             return super().form_invalid(form)
@@ -365,6 +366,9 @@ class LotUpdateView(UpdateView):
                         amount = lot_cost.amount_spent
                         date = lot_cost.date
                         Debit.objects.create(name=name, description=description, amount=amount, date=date)
+        if form.instance.history.first().status == 'delivered_to_warehouse':
+            form.add_error(None, 'Нельзя изменить лот, который уже находится на складе')
+            return super().form_invalid(form)
         return super().form_valid(form)
 
 

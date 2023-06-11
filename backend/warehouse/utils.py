@@ -73,7 +73,7 @@ def transfer_from_lot_to_warehouse():
                 cost_price=product_cost_price(lot.pk, product_in_lot.product.pk),
                 transaction='in',
             )
-        lot.status = 'in_warehouse'
+        lot.status = 'delivered_to_warehouse'
         lot.save()
 
 
