@@ -38,6 +38,7 @@ from .models import (
     Debit,
     Credit,
 )
+from .utils import add_debits_from_lot_if_not_exists
 
 
 def index(request):
@@ -333,38 +334,39 @@ class LotUpdateView(UpdateView):
             return super().form_invalid(form)
         elif form.instance.history.first().status == 'paid':
             if form.instance.status == 'paid':
+                add_debits_from_lot_if_not_exists(form.instance)
                 # Получаем уже существующие затраты в Debit, связанные с лотом
-                existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {form.instance.pk} на лот')
-                                                       | Q(name__startswith=f'Оплата лота {form.instance.pk}'))
-
-                existing_debit_names = [ debit.name for debit in existing_debits ]
-
-                # Проверяем, существует ли уже запись для оплаты лота
-                existing_payment_debit = Debit.objects.filter(name=f'Оплата лота {form.instance.pk}').exists()
-
-                if not existing_payment_debit:
-                    # Создаем объект Debit только если его еще нет
-                    name = f'Оплата лота {form.instance.pk}'
-                    description = f'Оплата за товары лота #{form.instance.pk} от {form.instance.date}'
-                    amount = form.instance.get_total_lot_purchase_price()
-                    date = form.instance.date
-                    Debit.objects.create(name=name, description=description, amount=amount, date=date)
-
-                # Создаем затраты в Debit только для тех расходов, которые ранее не были добавлены
-                lot_costs = form.instance.lotcost_set.exclude(name__in=existing_debit_names)
-                for lot_cost in lot_costs:
-                    # Проверяем, существует ли уже запись для данного расхода на лот
-                    existing_debit = Debit.objects.filter(
-                        name=f'Затраты {lot_cost.pk} на лот #{form.instance.pk}').exists()
-
-                    if not existing_debit:
-                        # Создаем объект Debit только если его еще нет
-                        name = f'Затраты {lot_cost.pk} на лот #{form.instance.pk}'
-                        description = f'Затраты #{lot_cost.pk} ({lot_cost.get_display_name()}) от {lot_cost.date} ' \
-                                      f'на лот #{form.instance.pk} от {form.instance.date}'
-                        amount = lot_cost.amount_spent
-                        date = lot_cost.date
-                        Debit.objects.create(name=name, description=description, amount=amount, date=date)
+                # existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {form.instance.pk} на лот')
+                #                                        | Q(name__startswith=f'Оплата лота {form.instance.pk}'))
+                #
+                # existing_debit_names = [ debit.name for debit in existing_debits ]
+                #
+                # # Проверяем, существует ли уже запись для оплаты лота
+                # existing_payment_debit = Debit.objects.filter(name=f'Оплата лота {form.instance.pk}').exists()
+                #
+                # if not existing_payment_debit:
+                #     # Создаем объект Debit только если его еще нет
+                #     name = f'Оплата лота {form.instance.pk}'
+                #     description = f'Оплата за товары лота #{form.instance.pk} от {form.instance.date}'
+                #     amount = form.instance.get_total_lot_purchase_price()
+                #     date = form.instance.date
+                #     Debit.objects.create(name=name, description=description, amount=amount, date=date)
+                #
+                # # Создаем затраты в Debit только для тех расходов, которые ранее не были добавлены
+                # lot_costs = form.instance.lotcost_set.exclude(name__in=existing_debit_names)
+                # for lot_cost in lot_costs:
+                #     # Проверяем, существует ли уже запись для данного расхода на лот
+                #     existing_debit = Debit.objects.filter(
+                #         name=f'Затраты {lot_cost.pk} на лот #{form.instance.pk}').exists()
+                #
+                #     if not existing_debit:
+                #         # Создаем объект Debit только если его еще нет
+                #         name = f'Затраты {lot_cost.pk} на лот #{form.instance.pk}'
+                #         description = f'Затраты #{lot_cost.pk} ({lot_cost.get_display_name()}) от {lot_cost.date} ' \
+                #                       f'на лот #{form.instance.pk} от {form.instance.date}'
+                #         amount = lot_cost.amount_spent
+                #         date = lot_cost.date
+                #         Debit.objects.create(name=name, description=description, amount=amount, date=date)
         if form.instance.history.first().status == 'delivered_to_warehouse':
             form.add_error(None, 'Нельзя изменить лот, который уже находится на складе')
             return super().form_invalid(form)
