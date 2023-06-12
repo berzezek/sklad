@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Расходы{% endblock %}
+{% block title %}Баланс{% endblock %}
 
 {% block content %}
 
@@ -26,7 +26,7 @@
     <ul class="collapsible">
         <li>
             <div class="collapsible-header"><i class="material-icons">input</i>
-                Кредиты <span class="badge" data-badge-caption="шт.">{{ credits|length }}</span>
+                Приходы <span class="badge" data-badge-caption="шт.">{{ credits|length }}</span>
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/credit/credit_list.html' with object_list=credits %}
@@ -34,7 +34,7 @@
         </li>
         <li>
             <div class="collapsible-header"><i class="material-icons">attach_money</i>
-                Дебиты <span class="badge" data-badge-caption="шт.">{{ debits|length }}</span>
+                Расходы <span class="badge" data-badge-caption="шт.">{{ debits|length }}</span>
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/debit/debit_list.html' with object_list=debits %}
