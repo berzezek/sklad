@@ -285,7 +285,7 @@ class Credit(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"Кредит {self.name} - {round(self.amount)}"
+        return f"Приход {self.name} - {round(self.amount)}"
 
 
 class Debit(models.Model):
@@ -296,4 +296,4 @@ class Debit(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"Дебит {self.name} - {round(self.amount)}"
+        return f"Расход {self.name} - {round(self.amount)}"
