@@ -20,7 +20,7 @@ class Product(models.Model):
     name = models.CharField(verbose_name='Наименование', max_length=100, unique=True)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.CASCADE)
-    weight = models.DecimalField(verbose_name='Вес в кг', max_digits=10, decimal_places=2)
+    weight = models.DecimalField(verbose_name='Вес в кг', max_digits=10, decimal_places=2, default=0)
     retail_price = models.DecimalField(verbose_name='Розничная цена', max_digits=10, decimal_places=2)
     history = HistoricalRecords()
 
