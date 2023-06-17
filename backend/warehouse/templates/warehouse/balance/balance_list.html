@@ -8,8 +8,8 @@
         <div class="">
             <div class="card indigo darken-1">
                 <div class="card-content white-text">
-                    <span class="card-title">Общий баланс = {{ balance_all }}</span>
-                    <span class="card-title">Баланс за период = {{ balance }}</span>
+                    <span class="card-title">Общий баланс = {{ balance_all|floatformat:"g" }}</span>
+                    <span class="card-title">Баланс за период = {{ balance|floatformat:"g" }}</span>
                     <form method="post">
                         {% csrf_token %}
                         {{ form.as_p }}

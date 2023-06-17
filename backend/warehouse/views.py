@@ -437,7 +437,7 @@ class WarehouseDetailView(DetailView):
         product_in_warehouse_all = ProductInWarehouse.objects.filter(
             warehouse=self.object,
             transaction='in'
-        )
+        ).order_by('product__name')
         context[ 'productinwarehouse_all_list' ] = product_in_warehouse_all
         context[ 'productinwarehouse_list' ] = product_in_warehouse
         context[ 'delivered_lot_list' ] = delivered_lot_list
