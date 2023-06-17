@@ -1,0 +1,36 @@
+<h5 class="center-align">Список товаров на складе <span class="badge" data-badge-caption="шт.">{{ object_list|length }}</span>
+</h5>
+
+<table class="highlight">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Продукт</th>
+        <th>Количество</th>
+        <th>Розничная цена</th>
+        <th>Себестоимость</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% if object_list|length %}
+        {% for obj in object_list %}
+            <tr>
+                <td>{{ obj.pk }}</td>
+                <td>{{ obj.product.name }}</td>
+                <td>{{ obj.quantity|floatformat:"g" }}</td>
+                <td>{{ obj.product.retail_price|floatformat:"g" }}</td>
+                <td>{{ obj.cost_price|floatformat:"g" }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3">Нет данных</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>
+<br/>
+<div class="row">
+
+</div>

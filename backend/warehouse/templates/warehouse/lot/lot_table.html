@@ -5,7 +5,6 @@
         <th>Дата создания</th>
         <th>Статус</th>
         <th>Описание</th>
-        <th>Примечания</th>
     </tr>
     </thead>
 
@@ -17,9 +16,6 @@
                 <td><a href="{% url 'warehouse:lot_detail' obj.pk %}">{{ obj.date }}</a></td>
                 <td>{{ obj.get_status_display }}</td>
                 <td>{{ obj.description|truncatewords:3 }}</td>
-                {% if obj.excluded_lot_costs %}
-                    <td>{{ obj.excluded_lot_costs }}</td>
-                {% endif %}
             </tr>
         {% endfor %}
     {% else %}

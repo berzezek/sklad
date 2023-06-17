@@ -39,8 +39,8 @@
         </div>
     </div>
 
-    {% include 'warehouse/productinwarehouse/productinwarehouse_balance_list.html' with object_list=productinwarehouse_list %}
-
+{#    {% include 'warehouse/productinwarehouse/productinwarehouse_balance_list.html' with object_list=productinwarehouse_list %}#}
+    {% include 'warehouse/productinwarehouse/productinwarehouse_all_list.html' with object_list=productinwarehouse_all_list %}
     {% include 'warehouse/services/transfer_to_warehouse/lot_table.html' with object_list=delivered_lot_list %}
 
 {% endblock %}

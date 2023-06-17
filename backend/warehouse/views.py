@@ -254,21 +254,22 @@ class LotListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        excluded_lot_costs = []
-        for lot in context['object_list']:
+        excluded_lot_costs = [ ]
+        for lot in context[ 'object_list' ]:
             if lot.status == 'paid':
                 existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {lot.pk} на лот')
                                                        | Q(name__startswith=f'Оплата лота {lot.pk}'))
 
-                existing_debit_names = [debit.name for debit in existing_debits]
+                existing_debit_names = [ debit.name for debit in existing_debits ]
 
                 lot_costs = lot.lotcost_set.exclude(name__in=existing_debit_names)
 
                 excluded_lot_costs.extend(lot_costs)
 
-        context['excluded_lot_costs'] = excluded_lot_costs
+        context[ 'excluded_lot_costs' ] = excluded_lot_costs
 
         return context
+
 
 class LotCreateView(CreateView):
     model = Lot
@@ -432,6 +433,12 @@ class WarehouseDetailView(DetailView):
                 last_date=Subquery(last_date_subquery),
             )
         )
+
+        product_in_warehouse_all = ProductInWarehouse.objects.filter(
+            warehouse=self.object,
+            transaction='in'
+        )
+        context[ 'productinwarehouse_all_list' ] = product_in_warehouse_all
         context[ 'productinwarehouse_list' ] = product_in_warehouse
         context[ 'delivered_lot_list' ] = delivered_lot_list
         return context
