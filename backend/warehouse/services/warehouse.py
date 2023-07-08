@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from ..models import ProductInLot, Lot, LotCost, Warehouse, ProductInWarehouse, ProductInOrder
-from ..utils import add_debits_from_lot_if_not_exists
+from ..utils import add_costs_out_from_lot_if_not_exists
 
 
 def product_cost_price(lot_id=None, product_in_lot_id=None):
@@ -88,7 +88,7 @@ def lot_to_warehouse_detail(request, warehouse_id=None, lot_id=None):
                 cost_price=pil[ 'cost_price' ],
                 transaction='in',
             )
-        add_debits_from_lot_if_not_exists(Lot.objects.get(pk=lot_id))
+        add_costs_out_from_lot_if_not_exists(Lot.objects.get(pk=lot_id))
         lot.status = 'delivered_to_warehouse'
         lot.save()
         return redirect('warehouse:warehouse_list')

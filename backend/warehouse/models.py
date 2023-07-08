@@ -276,24 +276,14 @@ class ProductInOrder(models.Model):
 Модели баланса
 """
 
-
-class Credit(models.Model):
+class Cost(models.Model):
     name = models.CharField(verbose_name='Наименование', max_length=32)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
-    date = models.DateField(verbose_name='Дата создания', default=timezone.now)
-    history = HistoricalRecords()
-
-    def __str__(self):
-        return f"Приход {self.name} - {round(self.amount)}"
-
-
-class Debit(models.Model):
-    name = models.CharField(verbose_name='Наименование', max_length=32)
-    description = models.TextField(verbose_name='Описание', null=True, blank=True)
-    amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
+    transaction = models.CharField(verbose_name='Вид прихода', max_length=10, choices=[('in', 'приход'), ('out', 'расход')])
     date = models.DateField(verbose_name='Дата создания', default=timezone.now)
     history = HistoricalRecords()
 
     def __str__(self):
         return f"Расход {self.name} - {round(self.amount)}"
+    
