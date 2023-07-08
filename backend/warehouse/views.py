@@ -654,7 +654,7 @@ class CostCreateView(CreateView):
     model = Cost
     form_class = CostForm
     template_name = 'warehouse/cost/cost_create.html'
-    success_url = reverse_lazy('warehouse:cost_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 class CostDetailView(DetailView):
@@ -666,13 +666,13 @@ class CostUpdateView(UpdateView):
     model = Cost
     template_name = 'warehouse/cost/cost_update.html'
     form_class = CostForm
-    success_url = reverse_lazy('warehouse:cost_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 class CostDeleteView(DeleteView):
     model = Cost
     template_name = 'warehouse/cost/cost_delete.html'
-    success_url = reverse_lazy('warehouse:cost_list')
+    success_url = reverse_lazy('warehouse:balance_list')
 
 
 
