@@ -26,21 +26,26 @@
     <ul class="collapsible">
         <li>
             <div class="collapsible-header"><i class="material-icons">input</i>
-                Приходы <span class="badge" data-badge-caption="шт.">{{ credits|length }}</span>
+                Приходы <span class="badge" data-badge-caption="шт.">{{ costs_in|length }}</span>
             </div>
             <div class="collapsible-body">
-                {% include 'warehouse/credit/credit_list.html' with object_list=credits %}
+                {% include 'warehouse/cost/cost_list.html' with object_list=costs_in %}
             </div>
         </li>
         <li>
             <div class="collapsible-header"><i class="material-icons">attach_money</i>
-                Расходы <span class="badge" data-badge-caption="шт.">{{ debits|length }}</span>
+                Расходы <span class="badge" data-badge-caption="шт.">{{ costs_out|length }}</span>
             </div>
             <div class="collapsible-body">
-                {% include 'warehouse/debit/debit_list.html' with object_list=debits %}
+                {% include 'warehouse/cost/cost_list.html' with object_list=costs_out %}
             </div>
         </li>
     </ul>
+    <br/>
+    <div class="row">
+
+        <a href="{% url 'warehouse:cost_create' %}" class="waves-effect waves-light btn">Добавить приход / расход</a>
+    </div>
 
 {% endblock %}
 

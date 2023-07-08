@@ -8,4 +8,5 @@ class WarehouseConfig(AppConfig):
 
     def ready(self):
         import warehouse.signals
-        post_save.connect(warehouse.signals.create_credit_and_out_product_in_warehouse, sender='warehouse.Order')
+        post_save.connect(warehouse.signals.create_cost_in_and_out_product_in_warehouse, sender='warehouse.Order')
+        post_save.connect(warehouse.signals.create_cost_out_for_buy_lot, sender='warehouse.Lot')

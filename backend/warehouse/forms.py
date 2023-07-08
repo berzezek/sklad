@@ -14,8 +14,7 @@ from .models import (
     Consumer,
     Order,
     ProductInOrder,
-    Debit,
-    Credit,
+    Cost,
 )
 
 
@@ -89,17 +88,9 @@ class ProductInOrderForm(forms.ModelForm):
         exclude = [ 'order' ]
 
 
-class DebitForm(forms.ModelForm):
+class CostForm(forms.ModelForm):
     class Meta:
-        model = Debit
-        # exclude = [ 'date' ]
-        fields = '__all__'
-
-
-class CreditForm(forms.ModelForm):
-    class Meta:
-        model = Credit
-        # exclude = [ 'date' ]
+        model = Cost
         fields = '__all__'
 
 class BalanceForm(forms.Form):

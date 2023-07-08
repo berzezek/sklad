@@ -20,10 +20,10 @@ from .forms import (
     ConsumerForm,
     OrderForm,
     ProductInOrderForm,
-    DebitForm,
-    CreditForm,
     BalanceForm,
+    CostForm,
 )
+
 from .models import (
     Category,
     Product,
@@ -35,10 +35,9 @@ from .models import (
     Consumer,
     Order,
     ProductInOrder,
-    Debit,
-    Credit,
+    Cost,
 )
-from .utils import add_debits_from_lot_if_not_exists
+from .utils import add_costs_out_from_lot_if_not_exists
 
 
 def index(request):
@@ -257,12 +256,12 @@ class LotListView(ListView):
         excluded_lot_costs = [ ]
         for lot in context[ 'object_list' ]:
             if lot.status == 'paid':
-                existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {lot.pk} на лот')
+                existing_costs_out = Cost.objects.filter(Q(name__startswith=f'Затраты {lot.pk} на лот')
                                                        | Q(name__startswith=f'Оплата лота {lot.pk}'))
 
-                existing_debit_names = [ debit.name for debit in existing_debits ]
+                existing_cost_out_names = [ cost_out.name for cost_out in existing_costs_out ]
 
-                lot_costs = lot.lotcost_set.exclude(name__in=existing_debit_names)
+                lot_costs = lot.lotcost_set.exclude(name__in=existing_cost_out_names)
 
                 excluded_lot_costs.extend(lot_costs)
 
@@ -335,39 +334,7 @@ class LotUpdateView(UpdateView):
             return super().form_invalid(form)
         elif form.instance.history.first().status == 'paid':
             if form.instance.status == 'paid':
-                add_debits_from_lot_if_not_exists(form.instance)
-                # Получаем уже существующие затраты в Debit, связанные с лотом
-                # existing_debits = Debit.objects.filter(Q(name__startswith=f'Затраты {form.instance.pk} на лот')
-                #                                        | Q(name__startswith=f'Оплата лота {form.instance.pk}'))
-                #
-                # existing_debit_names = [ debit.name for debit in existing_debits ]
-                #
-                # # Проверяем, существует ли уже запись для оплаты лота
-                # existing_payment_debit = Debit.objects.filter(name=f'Оплата лота {form.instance.pk}').exists()
-                #
-                # if not existing_payment_debit:
-                #     # Создаем объект Debit только если его еще нет
-                #     name = f'Оплата лота {form.instance.pk}'
-                #     description = f'Оплата за товары лота #{form.instance.pk} от {form.instance.date}'
-                #     amount = form.instance.get_total_lot_purchase_price()
-                #     date = form.instance.date
-                #     Debit.objects.create(name=name, description=description, amount=amount, date=date)
-                #
-                # # Создаем затраты в Debit только для тех расходов, которые ранее не были добавлены
-                # lot_costs = form.instance.lotcost_set.exclude(name__in=existing_debit_names)
-                # for lot_cost in lot_costs:
-                #     # Проверяем, существует ли уже запись для данного расхода на лот
-                #     existing_debit = Debit.objects.filter(
-                #         name=f'Затраты {lot_cost.pk} на лот #{form.instance.pk}').exists()
-                #
-                #     if not existing_debit:
-                #         # Создаем объект Debit только если его еще нет
-                #         name = f'Затраты {lot_cost.pk} на лот #{form.instance.pk}'
-                #         description = f'Затраты #{lot_cost.pk} ({lot_cost.get_display_name()}) от {lot_cost.date} ' \
-                #                       f'на лот #{form.instance.pk} от {form.instance.date}'
-                #         amount = lot_cost.amount_spent
-                #         date = lot_cost.date
-                #         Debit.objects.create(name=name, description=description, amount=amount, date=date)
+                add_costs_out_from_lot_if_not_exists(form.instance)
         if form.instance.history.first().status == 'delivered_to_warehouse':
             form.add_error(None, 'Нельзя изменить лот, который уже находится на складе')
             return super().form_invalid(form)
@@ -676,85 +643,56 @@ class ProductInOrderDeleteView(DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('warehouse:order_detail', kwargs={'pk': self.kwargs[ 'order_id' ]})
+    
+
+class CostListView(ListView):
+    model = Cost
+    template_name = 'warehouse/cost/cost_list.html'
 
 
-class DebitListView(ListView):
-    model = Debit
-    template_name = 'warehouse/debit/debit_list.html'
+class CostCreateView(CreateView):
+    model = Cost
+    form_class = CostForm
+    template_name = 'warehouse/cost/cost_create.html'
+    success_url = reverse_lazy('warehouse:cost_list')
 
 
-class DebitCreateView(CreateView):
-    model = Debit
-    form_class = DebitForm
-    template_name = 'warehouse/debit/debit_create.html'
-    success_url = reverse_lazy('warehouse:debit_list')
+class CostDetailView(DetailView):
+    model = Cost
+    template_name = 'warehouse/cost/cost_detail.html'
 
 
-class DebitDetailView(DetailView):
-    model = Debit
-    template_name = 'warehouse/debit/debit_detail.html'
+class CostUpdateView(UpdateView):
+    model = Cost
+    template_name = 'warehouse/cost/cost_update.html'
+    form_class = CostForm
+    success_url = reverse_lazy('warehouse:cost_list')
 
 
-class DebitUpdateView(UpdateView):
-    model = Debit
-    template_name = 'warehouse/debit/debit_update.html'
-    form_class = DebitForm
-    success_url = reverse_lazy('warehouse:balance_list')
+class CostDeleteView(DeleteView):
+    model = Cost
+    template_name = 'warehouse/cost/cost_delete.html'
+    success_url = reverse_lazy('warehouse:cost_list')
 
-
-class DebitDeleteView(DeleteView):
-    model = Debit
-    template_name = 'warehouse/debit/debit_delete.html'
-    success_url = reverse_lazy('warehouse:balance_list')
-
-
-class CreditListView(ListView):
-    model = Credit
-    template_name = 'warehouse/credit/credit_list.html'
-
-
-class CreditCreateView(CreateView):
-    model = Credit
-    form_class = CreditForm
-    template_name = 'warehouse/credit/credit_create.html'
-    success_url = reverse_lazy('warehouse:balance_list')
-
-
-class CreditDetailView(DetailView):
-    model = Credit
-    template_name = 'warehouse/credit/credit_detail.html'
-
-
-class CreditUpdateView(UpdateView):
-    model = Credit
-    template_name = 'warehouse/credit/credit_update.html'
-    form_class = CreditForm
-    success_url = reverse_lazy('warehouse:balance_list')
-
-
-class CreditDeleteView(DeleteView):
-    model = Credit
-    template_name = 'warehouse/credit/credit_delete.html'
-    success_url = reverse_lazy('warehouse:credit_list')
 
 
 def get_balance_by_date(request):
     form = BalanceForm()
-    debits = None
-    credits = None
+    costs_in = None
+    costs_out = None
     balance = None
-    credits_all = Debit.objects.all()
-    debits_all = Credit.objects.all()
-    balance_all = (debits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
-            credits_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
+    costs_in_all = Cost.objects.filter(transaction='in')
+    costs_out_all = Cost.objects.filter(transaction='out')
+    balance_all = (costs_in_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
+            costs_out_all.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     if request.method == 'GET':
         today = date.today()
         start_of_month = date(today.year, today.month, 1)
-        debits = Debit.objects.filter(date__gte=start_of_month)
-        credits = Credit.objects.filter(date__gte=start_of_month)
-        balance = (credits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
-                debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
+        costs_in = Cost.objects.filter(date__gte=start_of_month, transaction='in')
+        costs_out = Cost.objects.filter(date__gte=start_of_month, transaction='out')
+        balance = (costs_in.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
+                costs_out.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     elif request.method == 'POST':
         form = BalanceForm(request.POST)
@@ -762,15 +700,15 @@ def get_balance_by_date(request):
         if form.is_valid():
             date_from = form.cleaned_data[ 'date_from' ]
             date_to = form.cleaned_data[ 'date_to' ]
-            debits = Debit.objects.filter(date__gte=date_from, date__lte=date_to)
-            credits = Credit.objects.filter(date__gte=date_from, date__lte=date_to)
-            balance = (credits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
-                    debits.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
+            costs_in = Cost.objects.filter(date__gte=date_from, date__lte=date_to, transaction='in')
+            costs_out = Cost.objects.filter(date__gte=date_from, date__lte=date_to, transaction='out')
+            balance = (costs_in.aggregate(Sum('amount'))[ 'amount__sum' ] or 0) - (
+                    costs_out.aggregate(Sum('amount'))[ 'amount__sum' ] or 0)
 
     return render(request, 'warehouse/balance/balance_list.html', {
         'form': form,
-        'debits': debits,
-        'credits': credits,
+        'costs_in': costs_in,
+        'costs_out': costs_out,
         'balance': balance,
         'balance_all': balance_all,
     })
