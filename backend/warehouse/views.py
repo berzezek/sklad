@@ -1,6 +1,7 @@
 import csv
 from datetime import date
 from urllib.parse import quote
+from django.db.models import Q
 
 from django.db.models import Sum, F, Subquery, OuterRef, Case, When, Q
 from django.http import HttpResponse
@@ -8,6 +9,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.timezone import now
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
+from django.core.paginator import Paginator
 
 from .forms import (
     CategoryForm,
@@ -59,10 +61,27 @@ class CategoryCreateView(CreateView):
 class CategoryDetailView(DetailView):
     model = Category
     template_name = 'warehouse/category/category_detail.html'
+    paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[ 'product_list' ] = Product.objects.filter(category=self.kwargs[ 'pk' ])
+        product_list = Product.objects.filter(category=self.kwargs['pk'])
+        
+        # Получаем параметр поиска из GET-запроса
+        search_query = self.request.GET.get('q')
+        if search_query:
+            # Фильтруем список продуктов по поисковому запросу
+            product_list = product_list.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+        
+        paginator = Paginator(product_list, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['product_list'] = page_obj
+        context['search_query'] = search_query  # Передаем поисковой запрос в контекст
         return context
 
     def render_to_response(self, context, **response_kwargs):
@@ -79,8 +98,8 @@ class CategoryDetailView(DetailView):
             for product in products:
                 writer.writerow([ product.id, product.name, product.retail_price, product.weight ])
             writer.writerow([ ])  # Пустая строка
-            writer.writerow([ '', 'Ответственный', '______', 'Иванов А.Н' ])
-            writer.writerow([ '', 'Принял', '______', 'Петров К.Е.' ])
+            writer.writerow([ '', 'Ответственный', '______', '______' ])
+            writer.writerow([ '', 'Принял', '______', '______' ])
             return response
         return super().render_to_response(context, **response_kwargs)
 
@@ -101,6 +120,7 @@ class CategoryDeleteView(DeleteView):
 class ProductListView(ListView):
     model = Product
     template_name = 'warehouse/product/product_list.html'
+    paginate_by = 3
 
     def get_queryset(self):
         return Product.objects.filter(category=self.kwargs[ 'category_id' ])

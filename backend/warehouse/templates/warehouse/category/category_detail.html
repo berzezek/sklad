@@ -20,6 +20,12 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col s12">
+            {% include 'includes/search.html' with action_url=category_detail_action_url %}
+        </div>
+    </div>
+
     {% include 'warehouse/product/product_list.html' with object_list=product_list %}
 
 
