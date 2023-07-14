@@ -176,8 +176,6 @@ class ProductInLotDetailView(DetailView):
     template_name = 'warehouse/productinlot/productinlot_detail.html'
 
     def get_context_data(self, **kwargs):
-        for i in self.object.history.all():
-            print(i)
         context = super().get_context_data(**kwargs)
         context[ 'history' ] = self.object.history.all()
         return context
@@ -329,12 +327,14 @@ class LotUpdateView(UpdateView):
     success_url = reverse_lazy('warehouse:lot_list')
 
     def form_valid(self, form):
+        # Здесь проверяем что нельзя изменить лот, который уже доставлен,
         if form.instance.history.first().status == 'delivered':
             form.add_error(None, 'Нельзя изменить лот, который уже доставлен')
             return super().form_invalid(form)
-        elif form.instance.history.first().status == 'paid':
-            if form.instance.status == 'paid':
-                add_costs_out_from_lot_if_not_exists(form.instance)
+        # Если лот оплачен, то добавляем затраты на лот, если их еще нет
+        if form.instance.status == 'paid':
+            add_costs_out_from_lot_if_not_exists(form.instance)
+        # Здесь проверяем что нельзя изменить лот, который уже находится на складе
         if form.instance.history.first().status == 'delivered_to_warehouse':
             form.add_error(None, 'Нельзя изменить лот, который уже находится на складе')
             return super().form_invalid(form)
