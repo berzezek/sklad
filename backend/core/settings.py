@@ -122,6 +122,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MATERIALIZECSS_ICON_SET = 'fontawesome'
 
+TEMPLATE_STRING_IF_INVALID = 'Invalid Variable'
+
 try:
     from .local_settings import *
 except ImportError:

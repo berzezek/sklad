@@ -1,32 +1,38 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} 
 
-{% block title %}{{ object }}{% endblock %}
+{% block title %}{{ object }}{% endblock %} 
 
 {% block content %}
-    <div class="row">
-        <div class="">
-            <div class="card indigo darken-1">
-                <div class="card-content white-text">
-                    <span class="card-title">{{ object }}</span>
-                    <p>{{ object.description }}</p>
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'warehouse:category_list' %}">Вернуться</a>
-                    <a href="{% url 'warehouse:category_update' object.pk %}">Изменить</a>
-                    <a href="{% url 'warehouse:product_create' object.pk %}">Добавить продукт</a>
-                    <a href="{% url 'warehouse:category_detail' object.pk %}?format=csv">Скачать в CSV</a>
-                </div>
-            </div>
-        </div>
+<div class="row">
+  <div class="">
+    <div class="card indigo darken-1">
+      <div class="card-content white-text">
+        <span class="card-title">{{ object }}</span>
+        <p>{{ object.description }}</p>
+      </div>
+      <div class="card-action">
+        <a href="{% url 'warehouse:category_list' %}">Вернуться</a>
+        <a href="{% url 'warehouse:category_update' object.pk %}">Изменить</a>
+        <a href="{% url 'warehouse:product_create' object.pk %}"
+          >Добавить продукт</a
+        >
+        <a href="{% url 'warehouse:category_delete' object.pk %}"
+          >Удалить категорию *</a
+        >
+        <a href="{% url 'warehouse:category_detail' object.pk %}?format=csv"
+          >Скачать в CSV</a
+        >
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="row">
-        <div class="col s12">
-            {% include 'includes/search.html' with action_url=category_detail_action_url %}
-        </div>
-    </div>
+<div class="row">
+  <div class="col s12">
+    {% include 'includes/search.html' with action_url=category_detail_action_url %}
+  </div>
+</div>
 
-    {% include 'warehouse/product/product_list.html' with object_list=product_list %}
-
+{% include 'warehouse/product/product_list.html' with object_list=product_list detail_url='warehouse:product_detail' %} 
 
 {% endblock %}

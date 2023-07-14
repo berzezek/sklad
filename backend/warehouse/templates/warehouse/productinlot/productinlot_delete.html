@@ -1,7 +1,0 @@
-{% extends 'base.html' %}
-
-{% block title %}Удалить {{ object }}{% endblock %}
-
-{% block content %}
-    {% include 'warehouse/block/delete_form.html' with redirect_url='warehouse:lot_list ' %}
-{% endblock %}

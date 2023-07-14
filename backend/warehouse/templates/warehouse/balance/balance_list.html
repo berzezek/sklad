@@ -29,7 +29,7 @@
                 Приходы <span class="badge" data-badge-caption="шт.">{{ costs_in|length }}</span>
             </div>
             <div class="collapsible-body">
-                {% include 'warehouse/cost/cost_list.html' with object_list=costs_in %}
+                {% include 'warehouse/cost/cost_list.html' with object_list=costs_in detail_url='warehouse:cost_detail' %}
             </div>
         </li>
         <li>
@@ -37,7 +37,7 @@
                 Расходы <span class="badge" data-badge-caption="шт.">{{ costs_out|length }}</span>
             </div>
             <div class="collapsible-body">
-                {% include 'warehouse/cost/cost_list.html' with object_list=costs_out %}
+                {% include 'warehouse/cost/cost_list.html' with object_list=costs_out detail_url='warehouse:cost_detail' %}
             </div>
         </li>
     </ul>
