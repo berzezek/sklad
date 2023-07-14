@@ -126,6 +126,9 @@ class Lot(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.get_status_display()}"
+    
+    class Meta:
+        ordering = [ '-date' ]
 
 
 """
@@ -241,6 +244,9 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.consumer}"
+    
+    class Meta:
+        ordering = [ '-date' ]
 
 
 class ProductInOrder(models.Model):
@@ -286,4 +292,7 @@ class Cost(models.Model):
 
     def __str__(self):
         return f"Расход {self.name} - {round(self.amount)}"
+    
+    class Meta:
+        ordering = [ '-date' ]
     
