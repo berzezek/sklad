@@ -29,7 +29,7 @@ class Product(models.Model):
         return ProductInWarehouse.objects.filter(product=self).exists()
 
     def __str__(self):
-        return f'{self.name} ({round(self.weight)} кг.) - {round(self.retail_price)}'
+        return f'{self.name}, вес: {round(self.weight)} кг. рц: {round(self.retail_price)}'
 
 
 """
@@ -200,7 +200,7 @@ class ProductInWarehouse(models.Model):
             raise ValidationError('Количество не может быть отрицательным!')
 
     def __str__(self):
-        return f"{self.product} - {self.quantity}"
+        return f"{self.product}, Кол-во: {round(self.quantity)} шт."
 
 
 """
@@ -275,7 +275,7 @@ class ProductInOrder(models.Model):
             raise ValidationError(f"Продукт {self.product} недоступен на складе.")
 
     def __str__(self):
-        return f"{self.product} - {self.quantity} - {round(self.product.retail_price)}"
+        return f"{self.product} {round(self.product.retail_price)} ({round(self.quantity)})"
 
 
 """

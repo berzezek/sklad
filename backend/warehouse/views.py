@@ -128,6 +128,16 @@ class CategoryDeleteView(DeleteView):
     template_name = 'includes/delete.html'
     success_url = reverse_lazy('warehouse:category_list')
 
+    # Нельзя удалить категорию, если в ней есть продукты, или выдавать ошибку
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.product_set.count() > 0:
+            return render(request, 'includes/delete_error.html', {
+                'object': self.object,
+                'error_message': 'Нельзя удалить категорию, в которой есть продукты'
+                })
+        return super().delete(request, *args, **kwargs)
+
 
 class ProductListView(ListView):
     model = Product
@@ -391,9 +401,8 @@ class LotUpdateView(UpdateView):
         if form.instance.history.first().status == 'delivered':
             form.add_error(None, 'Нельзя изменить лот, который уже доставлен')
             return super().form_invalid(form)
-        elif form.instance.history.first().status == 'paid':
-            if form.instance.status == 'paid':
-                add_costs_out_from_lot_if_not_exists(form.instance)
+        if form.instance.status == 'paid':
+            add_costs_out_from_lot_if_not_exists(form.instance)
         if form.instance.history.first().status == 'delivered_to_warehouse':
             form.add_error(
                 None, 'Нельзя изменить лот, который уже находится на складе')
@@ -651,7 +660,7 @@ class OrderCreateView(CreateView):
 
 class OrderDetailView(DetailView):
     model = Order
-    template_name = 'warehouse/detail.html'
+    template_name = 'warehouse/order/order_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

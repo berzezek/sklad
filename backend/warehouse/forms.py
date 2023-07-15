@@ -16,6 +16,8 @@ from .models import (
     ProductInOrder,
     Cost,
 )
+from django.db.models import Exists, OuterRef
+
 
 
 class CategoryForm(forms.ModelForm):
@@ -77,12 +79,20 @@ class ConsumerForm(forms.ModelForm):
 
 
 class OrderForm(forms.ModelForm):
+
     class Meta:
         model = Order
         exclude = [ 'consumer' ]
 
 
 class ProductInOrderForm(forms.ModelForm):
+    available_products = Product.objects.filter(productinwarehouse__isnull=False).distinct()
+
+    product = forms.ModelChoiceField(
+        queryset=available_products,
+        label='Товары на складе',
+    )
+
     class Meta:
         model = ProductInOrder
         exclude = [ 'order' ]

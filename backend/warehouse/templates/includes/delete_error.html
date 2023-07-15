@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Ошибка {{ object }}{% endblock %}
+
+{% block content %}
+
+  <blockquote>
+    {{ error_message }}
+  </blockquote>
+
+  <a href="{% url 'warehouse:category_list' %}" class="btn waves-effect waves-light blue">Вернуться</a>
+
+{% endblock %}
+
+
