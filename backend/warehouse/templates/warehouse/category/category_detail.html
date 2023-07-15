@@ -7,7 +7,7 @@
   <div class="">
     <div class="card indigo darken-1">
       <div class="card-content white-text">
-        <span class="card-title">{{ object }}</span>
+        <span class="card-title">Категория {{ object }}</span>
         <p>{{ object.description }}</p>
       </div>
       <div class="card-action">
@@ -33,6 +33,6 @@
   </div>
 </div>
 
-{% include 'warehouse/product/product_list.html' with object_list=product_list detail_url='warehouse:product_detail' %} 
+{% include 'warehouse/product/product_list.html' with object_list=product_list detail_url='warehouse:product_detail' page_obj=page_obj %}
 
 {% endblock %}
