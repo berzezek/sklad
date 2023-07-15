@@ -75,7 +75,7 @@ class CategoryDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product_list = Product.objects.filter(category=self.kwargs['pk'])
+        product_list = Product.objects.filter(category=self.kwargs['pk']).order_by('id')
 
         # Получаем параметр поиска из GET-запроса
         search_query = self.request.GET.get('q')
@@ -90,8 +90,8 @@ class CategoryDetailView(DetailView):
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        context['product_list'] = page_obj
-        # Передаем поисковой запрос в контекст
+        context['product_list'] = product_list
+        context['page_obj'] = page_obj        # Передаем поисковой запрос в контекст
         context['search_query'] = search_query
         return context
 

@@ -19,6 +19,8 @@
               <td>{{ obj|getattribute:col_attr|truncatewords:3 }}</td>
             {% elif col_attr|gettype == 'float'%}
               <td>{{ obj|getattribute:col_attr|floatformat:"g" }}</td>
+            {% elif col_attr == 'status' %}
+              <td>{{ obj.get_status_display }}</td>
             {% else %}
               <td>{{ obj|getattribute:col_attr }}</td>
             {% endif %}
