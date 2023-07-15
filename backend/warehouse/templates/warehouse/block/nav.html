@@ -1,12 +1,20 @@
 <nav class="nav-extended indigo darken-1">
-    <div class="nav-content">
-        <ul class="tabs tabs-transparent">
-            <li class="tab"><a href="/">Главная</a></li>
-            <li class="tab"><a href="{% url 'warehouse:category_list' %}">Товары</a></li>
-            <li class="tab"><a href="{% url 'warehouse:lot_list' %}">Закупки</a></li>
-            <li class="tab"><a href="{% url 'warehouse:warehouse_list' %}">Склад</a></li>
-            <li class="tab"><a href="{% url 'warehouse:consumer_list' %}">Продажи</a></li>
-            <li class="tab"><a href="{% url 'warehouse:balance_list' %}">Баланс</a></li>
-        </ul>
-    </div>
+  <div class="nav-content">
+    <ul class="tabs tabs-transparent">
+      <li class="tab"><a href="/">Главная</a></li>
+      <li class="tab">
+        <a href="{% url 'warehouse:category_list' %}">Товары</a>
+      </li>
+      <li class="tab"><a href="{% url 'warehouse:lot_list' %}">Закупки</a></li>
+      <li class="tab">
+        <a href="{% url 'warehouse:warehouse_list' %}">Склад</a>
+      </li>
+      <li class="tab">
+        <a href="{% url 'warehouse:consumer_list' %}">Продажи</a>
+      </li>
+      <li class="tab">
+        <a href="{% url 'warehouse:balance_list' %}">Баланс</a>
+      </li>
+    </ul>
+  </div>
 </nav>

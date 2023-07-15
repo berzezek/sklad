@@ -81,7 +81,7 @@
                 Товары в заказе <span class="badge" data-badge-caption="шт.">{{ productinlot_list|length }}</span>
             </div>
             <div class="collapsible-body">
-                {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list %}
+                {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list detail_url='warehouse:productinlot_detail' %}
 
 
             </div>

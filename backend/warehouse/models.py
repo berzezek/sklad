@@ -52,7 +52,7 @@ class ProductInLot(models.Model):
         return self.quantity*self.product.weight
 
     def __str__(self):
-        return f"{self.product.product.name} - {self.quantity} - {round(self.purchase_price)}"
+        return f"{self.product.name} {self.quantity} - {round(self.purchase_price)}"
 
 
 class LotCost(models.Model):

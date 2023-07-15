@@ -1,7 +1,15 @@
 <form method="GET" action="{{ action_url }}">
-    <div class="input-field">
-        <input id="search" type="text" name="q" value="{{ search_query|default_if_none:'' }}" placeholder="Поиск">
-        <label for="search">Поиск</label>
-    </div>
-    <button class="btn waves-effect waves-light" type="submit" name="action">Найти</button>
+  <div class="input-field">
+    <input
+      id="search"
+      type="text"
+      name="q"
+      value="{{ search_query|default_if_none:'' }}"
+      placeholder="Поиск"
+    />
+    <label for="search">Введите наименование</label>
+  </div>
+  <button class="btn waves-effect waves-light" type="submit" name="action">
+    Найти
+  </button>
 </form>

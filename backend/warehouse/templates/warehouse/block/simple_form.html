@@ -1,8 +1,6 @@
 {% load materializecss %}
 
-<h5>{{ title }}</h5>
 <form action="" method="post">
-    {% csrf_token %}
-    {{ form|materializecss }}
-    <input class="waves-effect waves-light btn" type="submit" value="{{ button_title }}">
+  {% csrf_token %} {{ form|materializecss }}
+  <input class="waves-effect waves-light btn" type="submit" value="Отправить" />
 </form>

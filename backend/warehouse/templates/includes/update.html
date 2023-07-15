@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Изменить {{ object }}{% endblock %}
+
+
+
+{% block content %}
+    <h5>Изменить {{ object }}</h5>
+    {% include 'warehouse/block/simple_form.html' %}
+{% endblock %}

@@ -6,36 +6,7 @@
     <h5 class="center-align">Список покупателей <span class="badge"
                                                       data-badge-caption="шт.">{{ object_list|length }}</span></h5>
 
-    <table class="highlight">
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Наименование</th>
-            <th>Сумма покупок</th>
-            <th>Уровень покупателя</th>
-            <th>Описание</th>
-
-        </tr>
-        </thead>
-
-        <tbody>
-        {% if object_list|length %}
-            {% for obj in object_list %}
-                <tr>
-                    <td>{{ obj.pk }}</td>
-                    <td><a href="{% url 'warehouse:consumer_detail' obj.pk %}">{{ obj.name }}</a></td>
-                    <td>{{ obj.total_cost|floatformat:"g" }}</td>
-                    <td>{{ obj.level }}</td>
-                    <td>{{ obj.description|truncatewords:3 }}</td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="3">Нет данных</td>
-            </tr>
-        {% endif %}
-        </tbody>
-    </table>
+    {% include 'includes/table.html' with detail_url='warehouse:consumer_detail' %}
     <br/>
     <div class="row">
 
