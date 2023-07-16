@@ -2,6 +2,7 @@ import csv
 from datetime import date
 from typing import Any, Dict
 from urllib.parse import quote
+from django import http
 from django.db.models import Q
 
 from django.db.models import Sum, F, Subquery, OuterRef, Case, When, Q
@@ -55,6 +56,26 @@ class CategoryListView(ListView):
         kwargs['columns'] = ['#', 'Наименование', 'Описание']
         kwargs['columns_attributes'] = ['pk', 'name', 'description']
         return super().get_context_data(**kwargs)
+    
+    def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any) -> HttpResponse:
+        if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
+            filename = f'Справочник Товаров от {now().strftime("%Y-%m-%d")}.csv'
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{quote(filename)}'
+
+            writer = csv.writer(response)
+            writer.writerow(["#", "Наименование", "Розничная цена", "Вес кг."])
+
+            products = Product.objects.all()
+            for product in products:
+                writer.writerow([product.id, product.name,
+                                product.retail_price, product.weight])
+            writer.writerow([])  # Пустая строка
+            writer.writerow(['', 'Ответственный', '______', '______'])
+            writer.writerow(['', 'Принял', '______', '______'])
+            return response
+        
+        return super().render_to_response(context, **response_kwargs)
 
 
 class CategoryCreateView(CreateView):
@@ -66,7 +87,7 @@ class CategoryCreateView(CreateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         kwargs['object'] = 'новую категорию'
         return super().get_context_data(**kwargs)
-
+    
 
 class CategoryDetailView(DetailView):
     model = Category
@@ -94,26 +115,6 @@ class CategoryDetailView(DetailView):
         context['page_obj'] = page_obj        # Передаем поисковой запрос в контекст
         context['search_query'] = search_query
         return context
-
-    def render_to_response(self, context, **response_kwargs):
-        if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
-
-            filename = f'Справочник продуктов от {now().strftime("%Y-%m-%d")}.csv'
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{quote(filename)}'
-
-            writer = csv.writer(response)
-            writer.writerow(["#", "Наименование", "Розничная цена", "Вес кг."])
-
-            products = context['product_list']
-            for product in products:
-                writer.writerow([product.id, product.name,
-                                product.retail_price, product.weight])
-            writer.writerow([])  # Пустая строка
-            writer.writerow(['', 'Ответственный', '______', '______'])
-            writer.writerow(['', 'Принял', '______', '______'])
-            return response
-        return super().render_to_response(context, **response_kwargs)
 
 
 class CategoryUpdateView(UpdateView):
@@ -336,11 +337,14 @@ class LotCreateView(CreateView):
     model = Lot
     form_class = LotForm
     template_name = 'includes/create.html'
-    success_url = reverse_lazy('warehouse:lot_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         kwargs['object'] = 'новый лот'
         return super().get_context_data(**kwargs)
+    
+    def get_success_url(self):
+        pk = self.object.pk
+        return reverse_lazy('warehouse:lot_detail', kwargs={'pk': pk})
 
 
 class LotDetailView(DetailView):
@@ -349,9 +353,34 @@ class LotDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['productinlot_list'] = ProductInLot.objects.filter(
-            lot=self.object)
-        context['lotcost_list'] = LotCost.objects.filter(lot=self.object)
+        # количество продуктов в лоте поштучно
+        product_in_lot_amount_count = ProductInLot.objects.filter(lot=self.object).aggregate(Sum('quantity')).get('quantity__sum')
+        product_in_lot_list = ProductInLot.objects.filter(lot=self.object).select_related('product')
+        product_in_lot_list = list(product_in_lot_list)
+
+        lot_cost_queryset = LotCost.objects.filter(lot=self.object)
+        if lot_cost_queryset.exists():
+            lot_cost = lot_cost_queryset
+            lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+            lot_cost_amount_spent_by_weight = lot_cost.filter(distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+            lot_cost_amount_spent_by_price = lot_cost.filter(distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+
+            product_in_lot_count = len(product_in_lot_list)
+
+            for product_in_lot in product_in_lot_list:
+                product_in_lot.cost_price = product_in_lot.purchase_price
+
+                if product_in_lot_count and lot_cost_amount_spent_equal:
+                    product_in_lot.cost_price += lot_cost_amount_spent_equal / product_in_lot_amount_count
+
+                if self.object.get_products_weight() and lot_cost_amount_spent_by_weight:
+                    product_in_lot.cost_price += (lot_cost_amount_spent_by_weight / self.object.get_products_weight()) * product_in_lot.product.weight
+
+                if self.object.get_total_lot_purchase_price() and lot_cost_amount_spent_by_price:
+                    product_in_lot.cost_price += (lot_cost_amount_spent_by_price / self.object.get_total_lot_purchase_price()) * product_in_lot.purchase_price
+
+        context['productinlot_list'] = product_in_lot_list
+        context['lotcost_list'] = lot_cost_queryset
         context['history'] = self.object.history.all()[::-1]
         return context
 
@@ -363,28 +392,34 @@ class LotDetailView(DetailView):
 
             writer = csv.writer(response)
             writer.writerow(["", "Список продуктов в лоте"])
-            writer.writerow(["#", "Наименование товара",
-                            "Количество", "Стоимость"])
+            writer.writerow(["#", "Наименование товара", "Количество", "Вес кг.", "Закупочная стоимость", "Розничная цена"])
 
             productinlot_list = context['productinlot_list']
             for productinlot in productinlot_list:
                 writer.writerow(
-                    [productinlot.pk, productinlot.product.name, productinlot.quantity, productinlot.purchase_price])
-
+                    [productinlot.pk, productinlot.product.name, productinlot.quantity,productinlot.product.weight, productinlot.purchase_price, productinlot.product.retail_price])
+            writer.writerow([])
+            writer.writerow(["", "Сумма закупочной стоимости", self.object.get_total_lot_purchase_price()])
+            writer.writerow([])
+            writer.writerow(["", "Вес заказа кг.", self.object.get_products_weight()])
+            writer.writerow([])
             writer.writerow([])
             writer.writerow(["", "Список расходов по лоту"])
-            writer.writerow(["#", "Наименование расхода", "Стоимость", "Дата"])
+            writer.writerow(["#", "Наименование расхода", "Сумма", "Дата"])
             lotcost_list = context['lotcost_list']
             for lotcost in lotcost_list:
                 writer.writerow(
-                    [lotcost.pk, lotcost.get_display_name, lotcost.amount_spent, lotcost.date])
-
+                    [lotcost.pk, lotcost.get_display_name(), lotcost.amount_spent, lotcost.date])
+            writer.writerow([])
+            writer.writerow(["", "Сумма расходов по лоту", self.object.get_total_lot_amount_spent()])
+            writer.writerow([])
+            writer.writerow(["", "Итоговая стоимость лота", self.object.get_total()])
             writer.writerow([])
             writer.writerow(["", "История изменений статуса лота"])
             writer.writerow(["#", "Статус", "Дата"])
             history = context['history']
             for i in history:
-                writer.writerow([i.pk, i.get_status_display, i.date])
+                writer.writerow([i.pk, i.get_status_display(), i.date])
 
             return response
 

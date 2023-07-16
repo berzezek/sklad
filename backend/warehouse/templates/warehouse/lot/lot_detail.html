@@ -3,11 +3,15 @@
 {% block title %}{{ object }}{% endblock %}
 
 {% block content %}
+    <div class="row center">
+        <div class="col s12">
+            <h5>Заказ № {{ object.pk }}</h5>
+        </div>
+    </div>
     <div class="row">
         <div class="">
             <div class="card indigo darken-1">
                 <div class="card-content white-text">
-                    <span class="card-title">{{ object }}</span>
 
                     <div class="row">
                         <div class="col s6">

@@ -47,10 +47,10 @@ class ProductInLot(models.Model):
 
     def get_total_purchase_price(self):
         return self.quantity*self.purchase_price
-
+    
     def get_total_weight(self):
         return self.quantity*self.product.weight
-
+    
     def __str__(self):
         return f"{self.product.name} {self.quantity} - {round(self.purchase_price)}"
 

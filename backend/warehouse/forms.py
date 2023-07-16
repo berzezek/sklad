@@ -27,6 +27,14 @@ class CategoryForm(forms.ModelForm):
 
 
 class ProductForm(forms.ModelForm):
+
+    # Проверка уникальности имени товара
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if Product.objects.filter(name=name).exists():
+            raise forms.ValidationError(f'Товар с именем {name} уже существует')
+        return name
+
     class Meta:
         model = Product
         fields = (
@@ -55,6 +63,14 @@ class LotCostForm(forms.ModelForm):
 
 
 class LotForm(forms.ModelForm):
+
+    # Добавить в форму надпись "Введите описание партии при необходимости"
+    description = forms.CharField(
+        label='Введите описание партии при необходимости',
+        required=False,
+        widget=forms.Textarea
+    )
+
     class Meta:
         model = Lot
         fields = [ 'description' ]
