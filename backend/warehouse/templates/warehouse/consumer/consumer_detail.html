@@ -3,11 +3,15 @@
 {% block title %}{{ object }}{% endblock %}
 
 {% block content %}
+    <div class="row center">
+        <div class="col s12">
+            <h5>Покупатель {{ object.name }}</h5>
+        </div>
+    </div>
     <div class="row">
         <div class="">
             <div class="card indigo darken-1">
                 <div class="card-content white-text">
-                    <span class="card-title">{{ object.name }}</span>
                     <div class="row">
                         <div class="col s6">
                             <p>Общая сумма покупок</p>
@@ -35,8 +39,34 @@
             </div>
         </div>
     </div>
-    <h5 class="center-align">Список неоплаченных заказов <span class="badge"
-                                                               data-badge-caption="шт.">{{ object_list|length }}</span>
-    </h5>
-    {% include 'warehouse/order/order_list.html' with object_list=order_list %}
+    
+    <ul class="collapsible">
+        <li>
+            <div class="collapsible-header"><i class="material-icons">input</i>
+                Список всех заказов <span class="badge" data-badge-caption="шт.">{{ consumer_orders|length }}</span>
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/order/order_list.html' with object_list=consumer_orders %}
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header"><i class="material-icons">access_time</i>
+                Список неоплаченных заказов
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/order/order_list.html' with object_list=not_paid_orders %} <span class="badge"
+                data-badge-caption="шт.">{{ not_paid_orders|length }}</span>
+
+            </div>
+        </li>
+    </ul>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            $('.collapsible').collapsible();
+        });
+    </script>
 {% endblock %}

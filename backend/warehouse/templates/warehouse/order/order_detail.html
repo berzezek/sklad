@@ -3,6 +3,11 @@
 {% block title %}{{ object }}{% endblock %}
 
 {% block content %}
+    <div class="row center">
+        <div class="col s12">
+            <h5>Заказ № {{ object.pk }}</h5>
+        </div>
+    </div>
     <div class="row">
         <div class="">
             <div class="card indigo darken-1">
@@ -59,6 +64,35 @@
             </div>
         </div>
     </div>
-    {% include 'warehouse/productinorder/productinorder_list.html' with object_list=productinorder_list %}
 
+    <ul class="collapsible">
+        <li>
+            <div class="collapsible-header"><i class="material-icons">input</i>
+                Товары в заказе <span class="badge" data-badge-caption="шт.">{{ productinorder_list|length }}</span>
+            </div>
+            <div class="collapsible-body">
+                {% include 'warehouse/productinorder/productinorder_list.html' with object_list=productinorder_list %}
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header"><i class="material-icons">access_time</i>
+                История изменения заказа
+            </div>
+            <div class="collapsible-body">
+                {% for obj in history %}
+                    <p class="black-text">{{ obj.history_date|date:"d M h:m" }}
+                        - {{ obj.get_status_display|capfirst }}</p>
+                {% endfor %}
+            </div>
+        </li>
+    </ul>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            $('.collapsible').collapsible();
+        });
+    </script>
 {% endblock %}

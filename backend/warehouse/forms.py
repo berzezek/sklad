@@ -28,13 +28,6 @@ class CategoryForm(forms.ModelForm):
 
 class ProductForm(forms.ModelForm):
 
-    # Проверка уникальности имени товара
-    def clean_name(self):
-        name = self.cleaned_data['name']
-        if Product.objects.filter(name=name).exists():
-            raise forms.ValidationError(f'Товар с именем {name} уже существует')
-        return name
-
     class Meta:
         model = Product
         fields = (
@@ -76,6 +69,23 @@ class LotForm(forms.ModelForm):
         fields = [ 'description' ]
 
 
+class LotUpdateForm(forms.ModelForm):
+
+    STATUS_CHOICES = [
+        ('paid', 'оплачен'),
+        ('delivered', 'доставлен'),
+    ]
+
+    status = forms.ChoiceField(
+        label='Статус партии',
+        choices=STATUS_CHOICES,
+        required=False,
+    )
+
+    class Meta:
+        model = Lot
+        fields = '__all__'
+
 class WarehouseForm(forms.ModelForm):
     class Meta:
         model = Warehouse
@@ -96,9 +106,39 @@ class ConsumerForm(forms.ModelForm):
 
 class OrderForm(forms.ModelForm):
 
+    STATUS_CHOICES = [
+        ('new', 'новый'),
+        ('paid', 'оплачен'),
+        ('delivered', 'доставлен'),
+    ]
+
+    status = forms.ChoiceField(
+        label='Статус заказа',
+        choices=STATUS_CHOICES,
+        required=False,
+    )
+
     class Meta:
         model = Order
-        exclude = [ 'consumer' ]
+        exclude = [ 'consumer', 'warehouse' ]
+
+
+class OrderUpdateForm(forms.ModelForm):
+
+    STATUS_CHOICES = [
+        ('paid', 'оплачен'),
+        ('delivered', 'доставлен'),
+    ]
+
+    status = forms.ChoiceField(
+        label='Статус заказа',
+        choices=STATUS_CHOICES,
+        required=False,
+    )
+
+    class Meta:
+        model = Order
+        exclude = [ 'consumer', 'warehouse' ]
 
 
 class ProductInOrderForm(forms.ModelForm):

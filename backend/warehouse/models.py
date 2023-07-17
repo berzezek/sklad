@@ -222,6 +222,7 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('new', 'новый'),
         ('paid', 'оплачен'),
+        ('not_paid', 'не оплачен'),
         ('shipped', 'отправлен'),
     ]
     date = models.DateField(auto_now_add=True)

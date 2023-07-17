@@ -19,10 +19,12 @@ from .forms import (
     ProductInLotForm,
     LotCostForm,
     LotForm,
+    LotUpdateForm,
     WarehouseForm,
     ProductInWarehouseForm,
     ConsumerForm,
     OrderForm,
+    OrderUpdateForm,
     ProductInOrderForm,
     BalanceForm,
     CostForm,
@@ -429,8 +431,9 @@ class LotDetailView(DetailView):
 class LotUpdateView(UpdateView):
     model = Lot
     template_name = 'includes/update.html'
-    fields = '__all__'
+    # fields = '__all__'
     success_url = reverse_lazy('warehouse:lot_list')
+    form_class = LotUpdateForm
 
     def form_valid(self, form):
         if form.instance.history.first().status == 'delivered':
@@ -652,7 +655,20 @@ class ConsumerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['order_list'] = Order.objects.filter(consumer=self.object.pk)
+        # Все неоплаченные заказы покупателя
+        consumer_orders = Order.objects.filter(consumer=self.object.pk)
+        not_paid_orders = []
+        for order in consumer_orders:
+            is_paid = False
+            for i in order.history.all():
+                # Если статус заказа никогда не был 'paid', то добавляем его в список
+                if i.status == 'paid':
+                    is_paid = True
+                    break
+            if not is_paid:
+                not_paid_orders.append(order)
+        context['not_paid_orders'] = not_paid_orders
+        context['consumer_orders'] = consumer_orders
         return context
 
 
@@ -701,29 +717,29 @@ class OrderDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context['productinorder_list'] = ProductInOrder.objects.filter(
             order=self.object)
+        context['history'] = self.object.history.all()[::-1]
         return context
 
 
 class OrderUpdateView(UpdateView):
     model = Order
     template_name = 'includes/update.html'
-    form_class = OrderForm
+    form_class = OrderUpdateForm
 
     def get_success_url(self):
         return reverse_lazy('warehouse:consumer_detail', kwargs={'pk': self.object.consumer.id})
 
     def form_valid(self, form):
-        if form.instance.history.first().status == 'shipped':
-            # сообщение в форме об ошибке
-            form.add_error(
-                None, 'Нельзя изменить заказ, который уже отправлен')
-            return super().form_invalid(form)
-        elif form.instance.history.first().status == 'paid':
+        if form.instance.history.first().status == 'paid':
             if form.instance.status == 'paid':
                 # сообщение в форме об ошибке
                 form.add_error(
                     None, 'Нельзя изменить статус заказа на "оплачен", т.к. он уже оплачен')
                 return super().form_invalid(form)
+        if form.instance.status == 'shipped':
+            if form.isinstance.history.first().status != 'paid':
+                Order.objects.filter(pk=self.object.pk).update(
+                    status='not_paid')
         return super().form_valid(form)
 
 

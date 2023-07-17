@@ -5,7 +5,7 @@
 {% block content %}
     <div class="row center">
         <div class="col s12">
-            <h5>Заказ № {{ object.pk }}</h5>
+            <h5>Лот № {{ object.pk }}</h5>
         </div>
     </div>
     <div class="row">
@@ -82,7 +82,7 @@
     <ul class="collapsible">
         <li>
             <div class="collapsible-header"><i class="material-icons">input</i>
-                Товары в заказе <span class="badge" data-badge-caption="шт.">{{ productinlot_list|length }}</span>
+                Товары в закупке <span class="badge" data-badge-caption="шт.">{{ productinlot_list|length }}</span>
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list detail_url='warehouse:productinlot_detail' %}
@@ -92,7 +92,7 @@
         </li>
         <li>
             <div class="collapsible-header"><i class="material-icons">attach_money</i>
-                Расходы заказа <span class="badge" data-badge-caption="шт.">{{ lotcost_list|length }}</span>
+                Расходы закупки <span class="badge" data-badge-caption="шт.">{{ lotcost_list|length }}</span>
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
@@ -100,7 +100,7 @@
         </li>
         <li>
             <div class="collapsible-header"><i class="material-icons">access_time</i>
-                История изменения заказа</span>
+                История изменения закупки
             </div>
             <div class="collapsible-body">
                 {% for obj in history %}
