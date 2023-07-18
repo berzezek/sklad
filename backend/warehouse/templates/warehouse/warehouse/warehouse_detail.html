@@ -3,44 +3,59 @@
 {% block title %}{{ object }}{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="">
-            <div class="card indigo darken-1">
-                <div class="card-content white-text">
-                    <span class="card-title">{{ object.name }}</span>
-                    <div class="row">
-                        <div class="col s6">
-                            <p>Количество товаров на складе</p>
-                        </div>
-                        <div class="col s6">
-                            <p>{{ object.get_product_count|floatformat:"g" }}</p>
-                        </div>
+<div class="row">
+    <div class="">
+        <div class="card indigo darken-1">
+            <div class="card-content white-text">
+                <span class="card-title">{{ object.name }}</span>
+                <div class="row">
+                    <div class="col s6">
+                        <p>Количество товаров на складе</p>
                     </div>
-                    <div class="row">
-                        <div class="col s6">
-                            <p>Стоимость товаров на складе (розница)</p>
-                        </div>
-                        <div class="col s6">
-                            <p>{{ object.get_total_warehouse_retail_price|floatformat:"g" }}</p>
-                        </div>
+                    <div class="col s6">
+                        <p>{{ object.get_product_count|floatformat:"g" }}</p>
                     </div>
-                    <p>{{ object.description }}</p>
-
                 </div>
-
-                <div class="card-action">
-                    <a href="{% url 'warehouse:warehouse_list' %}">Вернуться</a>
-                    <a href="{% url 'warehouse:warehouse_update' object.pk %}">Изменить</a>
-                    <a href="{% url 'warehouse:lot_to_warehouse' object.pk %}">Перемещение товаров из заказа</a>
-                    <a href="{% url 'warehouse:productinwarehouse_list' object.pk %}">Движения товаров</a>
-{#                    <a href="{% url 'warehouse:warehouse_delete' object.pk %}">Удалить</a>#}
+                <div class="row">
+                    <div class="col s6">
+                        <p>Стоимость товаров на складе (розница)</p>
+                    </div>
+                    <div class="col s6">
+                        <p>{{ object.get_total_warehouse_retail_price|floatformat:"g" }}</p>
+                    </div>
                 </div>
+                <p>{{ object.description }}</p>
+
+            </div>
+
+            <div class="card-action">
+                <a href="{% url 'warehouse:warehouse_list' %}">Вернуться</a>
+                <a href="{% url 'warehouse:warehouse_update' object.pk %}">Изменить</a>
+                <a href="{% url 'warehouse:lot_to_warehouse' object.pk %}">Перемещение товаров из заказа</a>
+                <a href="{% url 'warehouse:productinwarehouse_list' object.pk %}">Движения товаров</a>
+                {# <a href="{% url 'warehouse:warehouse_delete' object.pk %}">Удалить</a>#}
             </div>
         </div>
     </div>
+</div>
 
-{#    {% include 'warehouse/productinwarehouse/productinwarehouse_balance_list.html' with object_list=productinwarehouse_list %}#}
-    {% include 'warehouse/productinwarehouse/productinwarehouse_all_list.html' with object_list=productinwarehouse_all_list %}
-    {% include 'warehouse/services/transfer_to_warehouse/lot_table.html' with object_list=delivered_lot_list %}
+<ul class="collapsible">
+    <li>
+        <div class="collapsible-header"><i class="material-icons">input</i>
+            Список товарова на складе <span class="badge" data-badge-caption="шт.">{{ productinwarehouse_all_list|length }}</span>
+        </div>
+        <div class="collapsible-body">
+            {% include 'warehouse/productinwarehouse/productinwarehouse_all_list.html' with object_list=productinwarehouse_all_list %}
+        </div>
+    </li>
+    <li>
+        <div class="collapsible-header"><i class="material-icons">attach_money</i>
+            Список закупок готовых к перемещению <span class="badge" data-badge-caption="шт.">{{ delivered_lot_list|length }}</span>
+        </div>
+        <div class="collapsible-body">
+            {% include 'warehouse/services/transfer_to_warehouse/lot_table.html' with object_list=delivered_lot_list %}
+        </div>
+    </li>
+</ul>
 
 {% endblock %}

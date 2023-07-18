@@ -3,108 +3,106 @@
 {% block title %}{{ object }}{% endblock %}
 
 {% block content %}
-    <div class="row center">
-        <div class="col s12">
-            <h5>Лот № {{ object.pk }}</h5>
-        </div>
-    </div>
-    <div class="row">
-        <div class="">
-            <div class="card indigo darken-1">
-                <div class="card-content white-text">
+<div class="row center">
+	<div class="col s12">
+		<h5>Лот № {{ object.pk }}</h5>
+	</div>
+</div>
+<div class="row">
+	<div class="">
+		<div class="card indigo darken-1">
+			<div class="card-content white-text">
 
-                    <div class="row">
-                        <div class="col s3">
-                            <p>Кол-во товаров в заказе</p>
-                        </div>
-                        <div class="col s3">
-                            <p>{{ object.get_products_quantity|floatformat:"g" }}</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s3">
-                            <p>Вес заказа</p>
-                        </div>
-                        <div class="col s3">
-                            <p>{{ object.get_products_weight|floatformat:"g" }}</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s3">
-                            <p>Сумма заказа</p>
-                        </div>
-                        <div class="col s3">
-                            <p>{{ object.get_total_lot_purchase_price|floatformat:"g" }}</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s3">
-                            <p>Сумма расходов</p>
-                        </div>
-                        <div class="col s3">
-                            <p>{{ object.get_total_lot_amount_spent|floatformat:"g" }}</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s3">
-                            <p>Итого</p>
-                        </div>
-                        <div class="col s3">
-                            <p>{{ object.get_total|floatformat:"g" }}</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s3">
-                            <p>Статус</p>
-                        </div>
-                        <div class="col s3">
-                            <p>{{ object.get_status_display }}</p>
-                        </div>
-                    </div>
-                    <p>{{ object.description }}</p>
-                </div>
-                <div class="card-action">
-                    <a href="{% url 'warehouse:lot_list' %}">Вернуться</a>
-                    <a href="{% url 'warehouse:lot_update' object.pk %}">Изменить</a>
-                    <a href="{% url 'warehouse:lot_delete' object.pk %}">Удалить</a>
-                    <a href="{% url 'warehouse:productinlot_create' object.pk %}">Товары</a>
-                    <a href="{% url 'warehouse:lotcost_create' object.pk %}">Расходы</a>
-                    <a href="{% url 'warehouse:lot_detail' object.pk %}?format=csv">Excell</a>
-                </div>
-            </div>
-        </div>
-    </div>
+				<div class="row">
+					<div class="col s3">
+						<p>Кол-во товаров в заказе</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.get_products_quantity|floatformat:"g" }}</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col s3">
+						<p>Вес заказа</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.get_products_weight|floatformat:"g" }}</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col s3">
+						<p>Сумма заказа</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.get_total_lot_purchase_price|floatformat:"g" }}</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col s3">
+						<p>Сумма расходов</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.get_total_lot_amount_spent|floatformat:"g" }}</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col s3">
+						<p>Итого</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.get_total|floatformat:"g" }}</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col s3">
+						<p>Статус</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.get_status_display }}</p>
+					</div>
+				</div>
+				<p>{{ object.description }}</p>
+			</div>
+			<div class="card-action">
+				<a href="{% url 'warehouse:lot_list' %}">Вернуться</a>
+				<a href="{% url 'warehouse:lot_update' object.pk %}">Изменить</a>
+				<a href="{% url 'warehouse:lot_delete' object.pk %}">Удалить</a>
+				<a href="{% url 'warehouse:productinlot_create' object.pk %}">Товары</a>
+				<a href="{% url 'warehouse:lotcost_create' object.pk %}">Расходы</a>
+				<a href="{% url 'warehouse:lot_detail' object.pk %}?format=csv">Excell</a>
+			</div>
+		</div>
+	</div>
+</div>
 
-    <ul class="collapsible">
-        <li>
-            <div class="collapsible-header"><i class="material-icons">input</i>
-                Товары в закупке <span class="badge" data-badge-caption="шт.">{{ productinlot_list|length }}</span>
-            </div>
-            <div class="collapsible-body">
-                {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list detail_url='warehouse:productinlot_detail' %}
-            </div>
-        </li>
-        <li>
-            <div class="collapsible-header"><i class="material-icons">attach_money</i>
-                Расходы закупки <span class="badge" data-badge-caption="шт.">{{ lotcost_list|length }}</span>
-            </div>
-            <div class="collapsible-body">
-                {% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
-            </div>
-        </li>
-        <li>
-            <div class="collapsible-header"><i class="material-icons">access_time</i>
-                История изменения закупки
-            </div>
-            <div class="collapsible-body">
-                {% for obj in history %}
-                    <p class="black-text">{{ obj.history_date|date:"d M h:m" }}
-                        - {{ obj.get_status_display|capfirst }}</p>
-                {% endfor %}
-            </div>
-        </li>
-    </ul>
+<ul class="collapsible">
+	<li>
+		<div class="collapsible-header"><i class="material-icons">input</i>
+			Товары в закупке <span class="badge" data-badge-caption="шт.">{{ productinlot_list|length }}</span>
+		</div>
+		<div class="collapsible-body">
+			{% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list detail_url='warehouse:productinlot_detail' %}
+		</div>
+	</li>
+	<li>
+		<div class="collapsible-header"><i class="material-icons">attach_money</i>
+			Расходы закупки <span class="badge" data-badge-caption="шт.">{{ lotcost_list|length }}</span>
+		</div>
+		<div class="collapsible-body">
+			{% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
+		</div>
+	</li>
+	<li>
+		<div class="collapsible-header"><i class="material-icons">access_time</i>
+			История изменения закупки
+		</div>
+		<div class="collapsible-body">
+			{% for obj in history %}
+			<p class="black-text">{{ obj.history_date|date:"d M h:m" }}
+				- {{ obj.get_status_display|capfirst }}</p>
+			{% endfor %}
+		</div>
+	</li>
+</ul>
 
 {% endblock %}
-
-

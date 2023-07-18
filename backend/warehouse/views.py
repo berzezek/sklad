@@ -393,16 +393,19 @@ class LotDetailView(DetailView):
         product_in_lot_list = list(product_in_lot_list)
 
         lot_cost_queryset = LotCost.objects.filter(lot=self.object)
-        if lot_cost_queryset.exists():
+
+
+        for product_in_lot in product_in_lot_list:
+            product_in_lot.cost_price = product_in_lot.purchase_price
+
             lot_cost = lot_cost_queryset
-            lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(Sum('amount_spent')).get('amount_spent__sum')
-            lot_cost_amount_spent_by_weight = lot_cost.filter(distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
-            lot_cost_amount_spent_by_price = lot_cost.filter(distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+            
+            if lot_cost_queryset.exists():
+                lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_by_weight = lot_cost.filter(distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_by_price = lot_cost.filter(distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
 
-            product_in_lot_count = len(product_in_lot_list)
-
-            for product_in_lot in product_in_lot_list:
-                product_in_lot.cost_price = product_in_lot.purchase_price
+                product_in_lot_count = len(product_in_lot_list)
 
                 if product_in_lot_count and lot_cost_amount_spent_equal:
                     product_in_lot.cost_price += lot_cost_amount_spent_equal / product_in_lot_amount_count
@@ -494,6 +497,30 @@ class WarehouseListView(ListView):
         kwargs['columns'] = ['#', 'Наименование', 'Описание']
         kwargs['columns_attributes'] = ['pk', 'name', 'description']
         return super().get_context_data(**kwargs)
+    
+    def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any) -> HttpResponse:
+        if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
+            filename = f'Справочник складов {now().strftime("%Y-%m-%d")}.csv'
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{quote(filename)}'
+
+            writer = csv.writer(response)
+            writer.writerow([])
+
+            warehouses = Warehouse.objects.all()
+            for warehouse in warehouses:
+                writer.writerow([warehouse.id, warehouse.name,
+                                warehouse.description])
+                products_in_warehouse = ProductInWarehouse.objects.filter(warehouse=warehouse)
+                writer.writerow(["", "Список продуктов на складе"])
+                for product_in_warehouse in products_in_warehouse:
+                    writer.writerow(["", product_in_warehouse.product.name, product_in_warehouse.quantity])
+
+            writer.writerow([])
+            writer.writerow(['', 'Ответственный', '______', '______'])
+            writer.writerow(['', 'Принял', '______', '______'])
+            return response
+        return super().render_to_response(context, **response_kwargs)
 
 
 class WarehouseCreateView(CreateView):
