@@ -14,9 +14,9 @@
     <tbody>
     {% if object_list|length %}
         {% for obj in object_list %}
-            <tr>
+            <tr onclick="window.location.href='{% url detail_url obj.pk %}'">
                 <td>{{ obj.pk }}</td>
-                <td><a href="{% url 'warehouse:lotcost_detail' obj.pk %}">{{ obj.date }}</a></td>
+                <td>{{ obj.date_created }}</td>
                 <td>{{ obj.amount_spent|floatformat:"g" }}</td>
                 <td>{{ obj.get_distribution_display }}</td>
                 <td>{{ obj.description|truncatewords:3 }}</td>

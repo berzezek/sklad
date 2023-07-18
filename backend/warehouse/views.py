@@ -61,7 +61,7 @@ class CategoryListView(ListView):
         kwargs['columns'] = ['#', 'Наименование', 'Описание']
         kwargs['columns_attributes'] = ['pk', 'name', 'description']
         return super().get_context_data(**kwargs)
-    
+
     def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any) -> HttpResponse:
         if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
             filename = f'Справочник Товаров от {now().strftime("%Y-%m-%d")}.csv'
@@ -79,7 +79,7 @@ class CategoryListView(ListView):
             writer.writerow(['', 'Ответственный', '______', '______'])
             writer.writerow(['', 'Принял', '______', '______'])
             return response
-        
+
         return super().render_to_response(context, **response_kwargs)
 
 
@@ -92,7 +92,7 @@ class CategoryCreateView(CreateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         kwargs['title'] = 'новую категорию'
         return super().get_context_data(**kwargs)
-    
+
 
 class CategoryDetailView(DetailView):
     model = Category
@@ -101,7 +101,8 @@ class CategoryDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product_list = Product.objects.filter(category=self.kwargs['pk']).order_by('id')
+        product_list = Product.objects.filter(
+            category=self.kwargs['pk']).order_by('id')
 
         # Получаем параметр поиска из GET-запроса
         search_query = self.request.GET.get('q')
@@ -117,7 +118,8 @@ class CategoryDetailView(DetailView):
         page_obj = paginator.get_page(page_number)
 
         context['product_list'] = product_list
-        context['page_obj'] = page_obj        # Передаем поисковой запрос в контекст
+        # Передаем поисковой запрос в контекст
+        context['page_obj'] = page_obj
         context['search_query'] = search_query
         return context
 
@@ -141,7 +143,7 @@ class CategoryDeleteView(DeleteView):
             return render(request, 'includes/delete_error.html', {
                 'object': self.object,
                 'error_message': 'Нельзя удалить категорию, в которой есть продукты'
-                })
+            })
         return super().delete(request, *args, **kwargs)
 
 
@@ -151,8 +153,10 @@ class ProductListView(ListView):
     paginate_by = 10
 
     def get_context_data(self, **kwargs):
-        kwargs['columns'] = ['#', 'Наименование', 'Розничная цена', 'Вес кг.', 'Описание']
-        kwargs['columns_attributes'] = ['pk', 'name', 'retail_price', 'weight', 'description']
+        kwargs['columns'] = ['#', 'Наименование',
+                             'Розничная цена', 'Вес кг.', 'Описание']
+        kwargs['columns_attributes'] = ['pk', 'name',
+                                        'retail_price', 'weight', 'description']
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
@@ -221,7 +225,7 @@ class ProductInLotCreateView(CreateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         kwargs['title'] = 'продукты в лот'
         product_list = Product.objects.all()
-        
+
         search_query = self.request.GET.get('q')
         if search_query:
             # Фильтруем список продуктов по поисковому запросу
@@ -230,14 +234,18 @@ class ProductInLotCreateView(CreateView):
                 Q(description__icontains=search_query)
             )
 
+        category_field = self.request.GET.get('category')
+        if category_field:
+            product_list = product_list.filter(category=category_field)
+
+        kwargs['category_list'] = Category.objects.all()
         kwargs['product_list'] = product_list
         kwargs['lot_id'] = self.kwargs['lot_id']
         return super().get_context_data(**kwargs)
-        
-    
+
     def get_success_url(self):
         return reverse_lazy('warehouse:lot_detail', kwargs={'pk': self.kwargs['lot_id']})
-    
+
     def post(self, request, *args, **kwargs):
         object_ids = self.request.POST.getlist('selected_objects')
         quantities = self.request.POST.getlist('quantities')
@@ -250,9 +258,10 @@ class ProductInLotCreateView(CreateView):
             message_text = ''
             for object_id, quantity, purchase_price, description in zip(object_ids, quantities, purchase_prices, descriptions):
                 if quantity != '0' and purchase_price != '0':
-                    try: 
+                    try:
                         product = Product.objects.get(pk=object_id)
-                        product_in_lot = ProductInLot(product=product, lot=lot, quantity=int(quantity), purchase_price=float(purchase_price), description=description)
+                        product_in_lot = ProductInLot(product=product, lot=lot, quantity=int(
+                            quantity), purchase_price=float(purchase_price), description=description)
                         product_in_lot.save()
                         message_text += f'Продукт {product.name} в количестве {quantity} добавлен\n'
                     except:
@@ -363,7 +372,8 @@ class LotListView(ListView):
 
         context['excluded_lot_costs'] = excluded_lot_costs
         context['columns'] = ['#', 'Дата создания', 'Статус', 'Описание']
-        context['columns_attributes'] = ['pk', 'date', 'status', 'description']
+        context['columns_attributes'] = [
+            'pk', 'date_created', 'status', 'description']
         return context
 
 
@@ -375,7 +385,7 @@ class LotCreateView(CreateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         kwargs['title'] = 'новый лот'
         return super().get_context_data(**kwargs)
-    
+
     def get_success_url(self):
         pk = self.object.pk
         return reverse_lazy('warehouse:lot_detail', kwargs={'pk': pk})
@@ -388,22 +398,26 @@ class LotDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # количество продуктов в лоте поштучно
-        product_in_lot_amount_count = ProductInLot.objects.filter(lot=self.object).aggregate(Sum('quantity')).get('quantity__sum')
-        product_in_lot_list = ProductInLot.objects.filter(lot=self.object).select_related('product')
+        product_in_lot_amount_count = ProductInLot.objects.filter(
+            lot=self.object).aggregate(Sum('quantity')).get('quantity__sum')
+        product_in_lot_list = ProductInLot.objects.filter(
+            lot=self.object).select_related('product')
         product_in_lot_list = list(product_in_lot_list)
 
         lot_cost_queryset = LotCost.objects.filter(lot=self.object)
-
 
         for product_in_lot in product_in_lot_list:
             product_in_lot.cost_price = product_in_lot.purchase_price
 
             lot_cost = lot_cost_queryset
-            
+
             if lot_cost_queryset.exists():
-                lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(Sum('amount_spent')).get('amount_spent__sum')
-                lot_cost_amount_spent_by_weight = lot_cost.filter(distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
-                lot_cost_amount_spent_by_price = lot_cost.filter(distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(
+                    Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_by_weight = lot_cost.filter(
+                    distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_by_price = lot_cost.filter(
+                    distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
 
                 product_in_lot_count = len(product_in_lot_list)
 
@@ -411,10 +425,12 @@ class LotDetailView(DetailView):
                     product_in_lot.cost_price += lot_cost_amount_spent_equal / product_in_lot_amount_count
 
                 if self.object.get_products_weight() and lot_cost_amount_spent_by_weight:
-                    product_in_lot.cost_price += (lot_cost_amount_spent_by_weight / self.object.get_products_weight()) * product_in_lot.product.weight
+                    product_in_lot.cost_price += (lot_cost_amount_spent_by_weight /
+                                                  self.object.get_products_weight()) * product_in_lot.product.weight
 
                 if self.object.get_total_lot_purchase_price() and lot_cost_amount_spent_by_price:
-                    product_in_lot.cost_price += (lot_cost_amount_spent_by_price / self.object.get_total_lot_purchase_price()) * product_in_lot.purchase_price
+                    product_in_lot.cost_price += (lot_cost_amount_spent_by_price /
+                                                  self.object.get_total_lot_purchase_price()) * product_in_lot.purchase_price
 
         context['productinlot_list'] = product_in_lot_list
         context['lotcost_list'] = lot_cost_queryset
@@ -429,16 +445,19 @@ class LotDetailView(DetailView):
 
             writer = csv.writer(response)
             writer.writerow(["", "Список продуктов в лоте"])
-            writer.writerow(["#", "Наименование товара", "Количество", "Вес кг.", "Закупочная стоимость", "Розничная цена"])
+            writer.writerow(["#", "Наименование товара", "Количество",
+                            "Вес кг.", "Закупочная стоимость", "Розничная цена"])
 
             productinlot_list = context['productinlot_list']
             for productinlot in productinlot_list:
                 writer.writerow(
-                    [productinlot.pk, productinlot.product.name, productinlot.quantity,productinlot.product.weight, productinlot.purchase_price, productinlot.product.retail_price])
+                    [productinlot.pk, productinlot.product.name, productinlot.quantity, productinlot.product.weight, productinlot.purchase_price, productinlot.product.retail_price])
             writer.writerow([])
-            writer.writerow(["", "Сумма закупочной стоимости", self.object.get_total_lot_purchase_price()])
+            writer.writerow(["", "Сумма закупочной стоимости",
+                            self.object.get_total_lot_purchase_price()])
             writer.writerow([])
-            writer.writerow(["", "Вес заказа кг.", self.object.get_products_weight()])
+            writer.writerow(
+                ["", "Вес заказа кг.", self.object.get_products_weight()])
             writer.writerow([])
             writer.writerow([])
             writer.writerow(["", "Список расходов по лоту"])
@@ -448,9 +467,11 @@ class LotDetailView(DetailView):
                 writer.writerow(
                     [lotcost.pk, lotcost.get_display_name(), lotcost.amount_spent, lotcost.date])
             writer.writerow([])
-            writer.writerow(["", "Сумма расходов по лоту", self.object.get_total_lot_amount_spent()])
+            writer.writerow(["", "Сумма расходов по лоту",
+                            self.object.get_total_lot_amount_spent()])
             writer.writerow([])
-            writer.writerow(["", "Итоговая стоимость лота", self.object.get_total()])
+            writer.writerow(
+                ["", "Итоговая стоимость лота", self.object.get_total()])
             writer.writerow([])
             writer.writerow(["", "История изменений статуса лота"])
             writer.writerow(["#", "Статус", "Дата"])
@@ -497,7 +518,7 @@ class WarehouseListView(ListView):
         kwargs['columns'] = ['#', 'Наименование', 'Описание']
         kwargs['columns_attributes'] = ['pk', 'name', 'description']
         return super().get_context_data(**kwargs)
-    
+
     def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any) -> HttpResponse:
         if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
             filename = f'Справочник складов {now().strftime("%Y-%m-%d")}.csv'
@@ -511,10 +532,12 @@ class WarehouseListView(ListView):
             for warehouse in warehouses:
                 writer.writerow([warehouse.id, warehouse.name,
                                 warehouse.description])
-                products_in_warehouse = ProductInWarehouse.objects.filter(warehouse=warehouse)
+                products_in_warehouse = ProductInWarehouse.objects.filter(
+                    warehouse=warehouse)
                 writer.writerow(["", "Список продуктов на складе"])
                 for product_in_warehouse in products_in_warehouse:
-                    writer.writerow(["", product_in_warehouse.product.name, product_in_warehouse.quantity])
+                    writer.writerow(
+                        ["", product_in_warehouse.product.name, product_in_warehouse.quantity])
 
             writer.writerow([])
             writer.writerow(['', 'Ответственный', '______', '______'])
@@ -546,7 +569,7 @@ class WarehouseDetailView(DetailView):
             ProductInWarehouse.objects
             .filter(warehouse=self.object)
             .filter(product_id=OuterRef('product_id'))
-            .order_by('-date')[:1]
+            .order_by('-date_created')[:1]
             .values('cost_price')
         )
 
@@ -554,8 +577,8 @@ class WarehouseDetailView(DetailView):
             ProductInWarehouse.objects
             .filter(warehouse=self.object)
             .filter(product_id=OuterRef('product_id'))
-            .order_by('-date')[:1]
-            .values('date')
+            .order_by('-date_created')[:1]
+            .values('date_created')
         )
 
         product_in_warehouse = (
@@ -617,15 +640,15 @@ class ProductInWarehouseBalancedListView(ListView):
         last_cost_price_subquery = (
             ProductInWarehouse.objects
             .filter(product_id=OuterRef('product_id'), warehouse_id=OuterRef('warehouse_id'))
-            .order_by('-date')[:1]
+            .order_by('-date_created')[:1]
             .values('cost_price')
         )
 
         last_date_subquery = (
             ProductInWarehouse.objects
             .filter(product_id=OuterRef('product_id'), warehouse_id=OuterRef('warehouse_id'))
-            .order_by('-date')[:1]
-            .values('date')
+            .order_by('-date_created')[:1]
+            .values('date_created')
         )
 
         product_in_warehouse = (
@@ -692,8 +715,10 @@ class ConsumerListView(ListView):
     template_name = 'warehouse/consumer/consumer_list.html'
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['columns'] = ['#', 'Наименование', 'Сумма покупок', 'Уровень покупателя', 'Описание']
-        kwargs['columns_attributes'] = ['pk', 'name', 'total_cost', 'level', 'description']
+        kwargs['columns'] = ['#', 'Наименование',
+                             'Сумма покупок', 'Уровень покупателя', 'Описание']
+        kwargs['columns_attributes'] = [
+            'pk', 'name', 'total_cost', 'level', 'description']
         return super().get_context_data(**kwargs)
 
 
@@ -778,7 +803,7 @@ class OrderDetailView(DetailView):
             order=self.object)
         context['history'] = self.object.history.all()[::-1]
         return context
-    
+
     def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any) -> HttpResponse:
         if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
             filename = f'Заказ_{self.object.pk}_от_{now().strftime("%Y-%m-%d")}.csv'
@@ -788,22 +813,25 @@ class OrderDetailView(DetailView):
             writer = csv.writer(response)
             writer.writerow(["", "Покупатель", self.object.consumer.name])
             writer.writerow(["", "Список продуктов в заказе"])
-            writer.writerow(["#", "Наименование товара", "Количество", "Вес кг.", "Цена"])
+            writer.writerow(["#", "Наименование товара",
+                            "Количество", "Вес кг.", "Цена"])
 
             productinorder_list = context['productinorder_list']
             for productinorder in productinorder_list:
                 writer.writerow(
-                    [productinorder.pk, productinorder.product.name, productinorder.quantity,productinorder.product.weight, productinorder.purchase_price, productinorder.product.retail_price])
+                    [productinorder.pk, productinorder.product.name, productinorder.quantity, productinorder.product.weight, productinorder.purchase_price, productinorder.product.retail_price])
             writer.writerow([])
-            writer.writerow(["", "Вес заказа кг.", self.object.get_total_order_weight()])
+            writer.writerow(
+                ["", "Вес заказа кг.", self.object.get_total_order_weight()])
             writer.writerow([])
-            writer.writerow(["", "Итоговая стоимость заказа", self.object.get_total_order_cost_price()])
+            writer.writerow(["", "Итоговая стоимость заказа",
+                            self.object.get_total_order_cost_price()])
             writer.writerow([])
             writer.writerow(["", "История изменений статуса заказа"])
             writer.writerow(["#", "Статус", "Дата"])
             history = context['history']
             for i in history:
-                writer.writerow([i.pk, i.get_status_display(), i.date])
+                writer.writerow([i.pk, i.get_status_display(), i.date_created])
 
             return response
 
@@ -895,7 +923,8 @@ class CostListView(ListView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         kwargs['columns'] = ['#', 'Наименование', 'Сумма', 'Дата', 'Описание']
-        kwargs['columns_attributes'] = ['pk', 'name', 'amount', 'date', 'description']
+        kwargs['columns_attributes'] = ['pk', 'name',
+                                        'amount', 'date_created', 'description']
         return super().get_context_data(**kwargs)
 
 
@@ -942,9 +971,9 @@ def get_balance_by_date(request):
         today = date.today()
         start_of_month = date(today.year, today.month, 1)
         costs_in = Cost.objects.filter(
-            date__gte=start_of_month, transaction='in')
+            date_created__gte=start_of_month, transaction='in')
         costs_out = Cost.objects.filter(
-            date__gte=start_of_month, transaction='out')
+            date_created__gte=start_of_month, transaction='out')
         balance = (costs_in.aggregate(Sum('amount'))['amount__sum'] or 0) - (
             costs_out.aggregate(Sum('amount'))['amount__sum'] or 0)
 
@@ -955,9 +984,9 @@ def get_balance_by_date(request):
             date_from = form.cleaned_data['date_from']
             date_to = form.cleaned_data['date_to']
             costs_in = Cost.objects.filter(
-                date__gte=date_from, date__lte=date_to, transaction='in')
+                date_created__gte=date_from, date_created__lte=date_to, transaction='in')
             costs_out = Cost.objects.filter(
-                date__gte=date_from, date__lte=date_to, transaction='out')
+                date_created__gte=date_from, date_created__lte=date_to, transaction='out')
             balance = (costs_in.aggregate(Sum('amount'))['amount__sum'] or 0) - (
                 costs_out.aggregate(Sum('amount'))['amount__sum'] or 0)
 

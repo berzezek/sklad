@@ -1,37 +1,31 @@
 {% load getattribute %}
-{% load gettype %} 
-
-<div class="row">
-  <div class="col s12">
-    {% include 'includes/search.html' with action_url=lot_detail_action_url %}
-  </div>
-</div>
+{% load gettype %}
 
 <form method="post" action="{% url 'warehouse:productinlot_create' lot_id %}">
   {% csrf_token %}
   <table class="highlight">
     <thead>
       <tr>
-          <th class="center">Наименование</th>
-          <th class="center">РЦ</th>
-          <th class="center">ЗЦ</th>
-          <th class="center">Кол-во</th>
-          <th class="center">Описание</th>
+        <th class="center">Наименование</th>
+        <th class="center">РЦ</th>
+        <th class="center">ЗЦ</th>
+        <th class="center">Кол-во</th>
+        <th class="center">Описание</th>
       </tr>
     </thead>
 
     <tbody>
-      {% if object_list|length %} 
-        {% for obj in object_list %}
-          <tr>
-            <input type="hidden" name="selected_objects" value="{{ obj.id }}">
-            <td class="center">{{obj.name}}</td>
-            <td class="center">{{obj.retail_price|floatformat:"g"}}</td>
-            <td><input class="center" type="number" name="purchase_prices" min="0"value="0" /></td>
-            <td><input class="center" type="number" name="quantities" min="0" value="0" /></td>
-            <td><input class="center" type="text" name="descriptions" value="" /></td>
-          </tr>
-        {% endfor %} 
+      {% if object_list|length %}
+      {% for obj in object_list %}
+      <tr>
+        <input type="hidden" name="selected_objects" value="{{ obj.id }}">
+        <td class="center">{{obj.name}}</td>
+        <td class="center">{{obj.retail_price|floatformat:"g"}}</td>
+        <td><input class="center" type="number" name="purchase_prices" min="0" value="0" /></td>
+        <td><input class="center" type="number" name="quantities" min="0" value="0" /></td>
+        <td><input class="center" type="text" name="descriptions" value="" /></td>
+      </tr>
+      {% endfor %}
       {% else %}
       <tr>
         <td colspan="3">Нет данных</td>
@@ -39,8 +33,7 @@
       {% endif %}
     </tbody>
   </table>
+  <br />
   <input type="submit" value="Добавить" class="btn" />
   <a class="btn" href="{% url 'warehouse:lot_detail' lot_id%}">Вернуться</a>
 </form>
-
-

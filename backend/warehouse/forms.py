@@ -172,7 +172,7 @@ class ProductInOrderForm(forms.ModelForm):
 
 
 class CostForm(forms.ModelForm):
-    date = forms.DateField(
+    date_created = forms.DateField(
         label='Дата',
         widget=forms.DateInput(
             attrs={'class': 'datepicker', 'readonly': 'readonly'},
