@@ -393,16 +393,19 @@ class LotDetailView(DetailView):
         product_in_lot_list = list(product_in_lot_list)
 
         lot_cost_queryset = LotCost.objects.filter(lot=self.object)
-        if lot_cost_queryset.exists():
+
+
+        for product_in_lot in product_in_lot_list:
+            product_in_lot.cost_price = product_in_lot.purchase_price
+
             lot_cost = lot_cost_queryset
-            lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(Sum('amount_spent')).get('amount_spent__sum')
-            lot_cost_amount_spent_by_weight = lot_cost.filter(distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
-            lot_cost_amount_spent_by_price = lot_cost.filter(distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+            
+            if lot_cost_queryset.exists():
+                lot_cost_amount_spent_equal = lot_cost.filter(distribution='equal').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_by_weight = lot_cost.filter(distribution='by_weight').aggregate(Sum('amount_spent')).get('amount_spent__sum')
+                lot_cost_amount_spent_by_price = lot_cost.filter(distribution='by_price').aggregate(Sum('amount_spent')).get('amount_spent__sum')
 
-            product_in_lot_count = len(product_in_lot_list)
-
-            for product_in_lot in product_in_lot_list:
-                product_in_lot.cost_price = product_in_lot.purchase_price
+                product_in_lot_count = len(product_in_lot_list)
 
                 if product_in_lot_count and lot_cost_amount_spent_equal:
                     product_in_lot.cost_price += lot_cost_amount_spent_equal / product_in_lot_amount_count
