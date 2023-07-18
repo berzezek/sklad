@@ -15,12 +15,22 @@
 
 				<div class="row">
 					<div class="col s3">
+						<p>Дата создания</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.date_created }}</p>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col s3">
 						<p>Кол-во товаров в заказе</p>
 					</div>
 					<div class="col s3">
 						<p>{{ object.get_products_quantity|floatformat:"g" }}</p>
 					</div>
 				</div>
+
 				<div class="row">
 					<div class="col s3">
 						<p>Вес заказа</p>
@@ -29,6 +39,7 @@
 						<p>{{ object.get_products_weight|floatformat:"g" }}</p>
 					</div>
 				</div>
+
 				<div class="row">
 					<div class="col s3">
 						<p>Сумма заказа</p>
@@ -37,6 +48,7 @@
 						<p>{{ object.get_total_lot_purchase_price|floatformat:"g" }}</p>
 					</div>
 				</div>
+
 				<div class="row">
 					<div class="col s3">
 						<p>Сумма расходов</p>
@@ -45,6 +57,7 @@
 						<p>{{ object.get_total_lot_amount_spent|floatformat:"g" }}</p>
 					</div>
 				</div>
+
 				<div class="row">
 					<div class="col s3">
 						<p>Итого</p>
@@ -53,6 +66,7 @@
 						<p>{{ object.get_total|floatformat:"g" }}</p>
 					</div>
 				</div>
+				
 				<div class="row">
 					<div class="col s3">
 						<p>Статус</p>
@@ -61,7 +75,16 @@
 						<p>{{ object.get_status_display }}</p>
 					</div>
 				</div>
-				<p>{{ object.description }}</p>
+				
+				<div class="row">
+					<div class="col s3">
+						<p>Описание</p>
+					</div>
+					<div class="col s3">
+						<p>{{ object.description }}</p>
+					</div>
+				</div>
+
 			</div>
 			<div class="card-action">
 				<a href="{% url 'warehouse:lot_list' %}">Вернуться</a>
@@ -89,7 +112,7 @@
 			Расходы закупки <span class="badge" data-badge-caption="шт.">{{ lotcost_list|length }}</span>
 		</div>
 		<div class="collapsible-body">
-			{% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list %}
+			{% include 'warehouse/lotcost/lotcost_list.html' with object_list=lotcost_list detail_url='warehouse:lotcost_detail' %}
 		</div>
 	</li>
 	<li>

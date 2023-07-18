@@ -1,0 +1,15 @@
+<form method="GET" action="{{ action_url }}">
+  {% csrf_token %}
+  <div class="input-field">
+    <select name="category">
+
+      <option value="" disabled selected >Выберите категорию</option>
+      {% for select in selects %}
+        <option value="{{ select.id }}">{{ select.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn waves-effect waves-light" type="submit" name="action">
+    Найти
+  </button>
+</form>

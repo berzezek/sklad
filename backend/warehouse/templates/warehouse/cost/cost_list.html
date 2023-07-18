@@ -18,7 +18,7 @@
         {% for obj in object_list %}
             <tr onclick="window.location.href='{% url detail_url obj.pk %}'">
                 <td>{{ obj.pk }}</td>
-                <td><a href="{% url 'warehouse:cost_detail' obj.pk %}">{{ obj.name }}</a></td>
+                <td>{{ obj.name }}</td>
                 <td>{{ obj.date }}</td>
                 <td>{{ obj.amount|floatformat:"g" }}</td>
                 <td>{{ obj.description|truncatewords:3 }}</td>

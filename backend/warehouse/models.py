@@ -68,7 +68,7 @@ class LotCost(models.Model):
     ]
     name = models.CharField(verbose_name='Наименование', max_length=32, choices=LOT_COST_CHOICES)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
-    date = models.DateField(verbose_name='Дата создания', auto_now_add=True)
+    date_created = models.DateField(verbose_name='Дата создания', auto_now_add=True)
     update_date = models.DateField(verbose_name='Дата изменения', auto_now=True)
     distribution = models.CharField(verbose_name='Способ распределения', max_length=10, choices=DISTRIBUTION_CHOICES)
     amount_spent = models.DecimalField(verbose_name='Потраченная сумма', max_digits=10, decimal_places=2)
@@ -84,7 +84,7 @@ class LotCost(models.Model):
         return name_display.get(self.name, self.name)
 
     def __str__(self):
-        return f"{self.date} - {round(self.amount_spent)}"
+        return f"{self.date_created} - {round(self.amount_spent)}"
 
 
 class Lot(models.Model):
@@ -95,7 +95,7 @@ class Lot(models.Model):
         ('delivered_to_warehouse', 'доставлен на склад'),
     ]
 
-    date = models.DateField(verbose_name='Дата создания', auto_now_add=True)
+    date_created = models.DateField(verbose_name='Дата создания', auto_now_add=True)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     update_date = models.DateField(verbose_name='Дата изменения', auto_now=True)
     status = models.CharField(verbose_name='Статус', max_length=32, choices=STATUS_CHOICES, default='new')
@@ -125,10 +125,10 @@ class Lot(models.Model):
             raise ValidationError('Так принимать заказы на склад нельзя! перейдите на склад и примите заказ там!')
 
     def __str__(self):
-        return f"{self.date} - {self.get_status_display()}"
+        return f"{self.date_created} - {self.get_status_display()}"
     
     class Meta:
-        ordering = [ '-date' ]
+        ordering = [ '-date_created' ]
 
 
 """
@@ -161,7 +161,7 @@ class ProductInWarehouse(models.Model):
         ('write_off', 'списание'),
     ]
     product = models.ForeignKey(Product, verbose_name='Продукт', on_delete=models.CASCADE)
-    date = models.DateField(verbose_name='Дата', auto_now_add=True)
+    date_created = models.DateField(verbose_name='Дата', auto_now_add=True)
     warehouse = models.ForeignKey(Warehouse, verbose_name='Склад', on_delete=models.CASCADE)
     quantity = models.DecimalField(verbose_name='Количество', max_digits=10, decimal_places=2, null=True)
     cost_price = models.DecimalField(verbose_name='Себестоимость', max_digits=10, decimal_places=2, null=True)
@@ -225,7 +225,7 @@ class Order(models.Model):
         ('not_paid', 'не оплачен'),
         ('shipped', 'отгружен'),
     ]
-    date = models.DateField(auto_now_add=True)
+    date_created = models.DateField(auto_now_add=True)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     update_date = models.DateField(auto_now=True)
     consumer = models.ForeignKey(Consumer, verbose_name='Покупатель', on_delete=models.CASCADE)
@@ -247,10 +247,10 @@ class Order(models.Model):
         return status_display.get(self.status, self.status)
 
     def __str__(self):
-        return f"{self.date} - {self.consumer}"
+        return f"{self.date_created} - {self.consumer}"
     
     class Meta:
-        ordering = [ '-date' ]
+        ordering = [ '-date_created' ]
 
 
 class ProductInOrder(models.Model):
@@ -297,12 +297,12 @@ class Cost(models.Model):
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
     transaction = models.CharField(verbose_name='Вид прихода', max_length=10, choices=TRANSACTION_CHOICES)
-    date = models.DateField(verbose_name='Дата создания', default=timezone.now)
+    date_created = models.DateField(verbose_name='Дата создания', default=timezone.now)
     history = HistoricalRecords()
 
     def __str__(self):
         return f"Расход {self.name} - {round(self.amount)}"
     
     class Meta:
-        ordering = [ '-date' ]
+        ordering = [ '-date_created' ]
     
