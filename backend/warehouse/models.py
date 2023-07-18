@@ -155,8 +155,8 @@ class Warehouse(models.Model):
 
 class ProductInWarehouse(models.Model):
     TRANSACTION_CHOICES = [
-        ('in', 'приход'),
-        ('out', 'расход'),
+        ('in', 'получение'),
+        ('out', 'отгрузка'),
         ('return', 'возврат'),
         ('write_off', 'списание'),
     ]
@@ -223,7 +223,7 @@ class Order(models.Model):
         ('new', 'новый'),
         ('paid', 'оплачен'),
         ('not_paid', 'не оплачен'),
-        ('shipped', 'отправлен'),
+        ('shipped', 'отгружен'),
     ]
     date = models.DateField(auto_now_add=True)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
@@ -235,6 +235,9 @@ class Order(models.Model):
 
     def get_total_order_retail_price(self):
         return sum([ p.get_total_retail_price() for p in self.productinorder_set.all() ])
+    
+    def get_total_order_cost_price(self):
+        return sum([ p.get_total_cost_price() for p in self.productinorder_set.all() ])
 
     def get_total_order_weight(self):
         return sum([ p.get_total_weight() for p in self.productinorder_set.all() ])
@@ -284,10 +287,16 @@ class ProductInOrder(models.Model):
 """
 
 class Cost(models.Model):
+
+    TRANSACTION_CHOICES = [
+        ('in', 'приход'),
+        ('out', 'расход'),
+    ]
+
     name = models.CharField(verbose_name='Наименование', max_length=32)
     description = models.TextField(verbose_name='Описание', null=True, blank=True)
     amount = models.DecimalField(verbose_name='Сумма', max_digits=12, decimal_places=2)
-    transaction = models.CharField(verbose_name='Вид прихода', max_length=10, choices=[('in', 'приход'), ('out', 'расход')])
+    transaction = models.CharField(verbose_name='Вид прихода', max_length=10, choices=TRANSACTION_CHOICES)
     date = models.DateField(verbose_name='Дата создания', default=timezone.now)
     history = HistoricalRecords()
 

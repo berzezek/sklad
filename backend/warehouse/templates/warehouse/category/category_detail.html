@@ -13,12 +13,8 @@
       <div class="card-action">
         <a href="{% url 'warehouse:category_list' %}">Вернуться</a>
         <a href="{% url 'warehouse:category_update' object.pk %}">Изменить</a>
-        <a href="{% url 'warehouse:product_create' object.pk %}"
-          >Добавить продукт</a
-        >
-        <a href="{% url 'warehouse:category_delete' object.pk %}"
-          >Удалить категорию *</a
-        >
+        <a href="{% url 'warehouse:product_create' object.pk %}">Товары</a>
+        <a href="{% url 'warehouse:category_delete' object.pk %}">Удалить</a>
       </div>
     </div>
   </div>

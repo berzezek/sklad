@@ -1,4 +1,5 @@
 <form method="GET" action="{{ action_url }}">
+  {% csrf_token %}
   <div class="input-field">
     <input
       id="search"

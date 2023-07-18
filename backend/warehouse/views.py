@@ -4,6 +4,8 @@ from typing import Any, Dict
 from urllib.parse import quote
 from django import http
 from django.db.models import Q
+from django.shortcuts import redirect
+from django.contrib import messages
 
 from django.db.models import Sum, F, Subquery, OuterRef, Case, When, Q
 from django.http import HttpResponse
@@ -17,6 +19,7 @@ from .forms import (
     CategoryForm,
     ProductForm,
     ProductInLotForm,
+    ProductInLotCreateForm,
     LotCostForm,
     LotForm,
     LotUpdateForm,
@@ -87,7 +90,7 @@ class CategoryCreateView(CreateView):
     success_url = reverse_lazy('warehouse:category_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новую категорию'
+        kwargs['title'] = 'новую категорию'
         return super().get_context_data(**kwargs)
     
 
@@ -162,7 +165,7 @@ class ProductCreateView(CreateView):
     form_class = ProductForm
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый продукт'
+        kwargs['title'] = 'новый продукт'
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
@@ -212,21 +215,50 @@ class ProductInLotListView(ListView):
 
 class ProductInLotCreateView(CreateView):
     model = ProductInLot
-    template_name = 'includes/create.html'
-    form_class = ProductInLotForm
+    template_name = 'includes/create_list.html'
+    form_class = ProductInLotCreateForm
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый продукт в лот'
-        return super().get_context_data(**kwargs)
+        kwargs['title'] = 'продукты в лот'
+        product_list = Product.objects.all()
+        
+        search_query = self.request.GET.get('q')
+        if search_query:
+            # Фильтруем список продуктов по поисковому запросу
+            product_list = product_list.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
 
+        kwargs['product_list'] = product_list
+        kwargs['lot_id'] = self.kwargs['lot_id']
+        return super().get_context_data(**kwargs)
+        
+    
     def get_success_url(self):
         return reverse_lazy('warehouse:lot_detail', kwargs={'pk': self.kwargs['lot_id']})
-
-    def form_valid(self, form):
+    
+    def post(self, request, *args, **kwargs):
+        object_ids = self.request.POST.getlist('selected_objects')
+        quantities = self.request.POST.getlist('quantities')
+        purchase_prices = self.request.POST.getlist('purchase_prices')
+        descriptions = self.request.POST.getlist('descriptions')
         lot_id = self.kwargs['lot_id']
         lot = Lot.objects.get(pk=lot_id)
-        form.instance.lot = lot
-        return super().form_valid(form)
+
+        if request.method == 'POST':
+            message_text = ''
+            for object_id, quantity, purchase_price, description in zip(object_ids, quantities, purchase_prices, descriptions):
+                if quantity != '0' and purchase_price != '0':
+                    try: 
+                        product = Product.objects.get(pk=object_id)
+                        product_in_lot = ProductInLot(product=product, lot=lot, quantity=int(quantity), purchase_price=float(purchase_price), description=description)
+                        product_in_lot.save()
+                        message_text += f'Продукт {product.name} в количестве {quantity} добавлен\n'
+                    except:
+                        message_text += f'!!! Внимание: Продукт {product.name} не добавлен\n'
+            messages.success(request, message_text)
+        return super().post(request, *args, **kwargs)
 
 
 class ProductInLotDetailView(DetailView):
@@ -273,7 +305,7 @@ class LotCostCreateView(CreateView):
     success_url = reverse_lazy('warehouse:lotcost_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый расход по лоту'
+        kwargs['title'] = 'новый расход по лоту'
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
@@ -341,7 +373,7 @@ class LotCreateView(CreateView):
     template_name = 'includes/create.html'
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый лот'
+        kwargs['title'] = 'новый лот'
         return super().get_context_data(**kwargs)
     
     def get_success_url(self):
@@ -471,7 +503,7 @@ class WarehouseCreateView(CreateView):
     success_url = reverse_lazy('warehouse:warehouse_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый склад'
+        kwargs['title'] = 'новый склад'
         return super().get_context_data(**kwargs)
 
 
@@ -593,7 +625,7 @@ class ProductInWarehouseCreateView(CreateView):
     success_url = reverse_lazy('warehouse:productinwarehouse_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый продукт на складе'
+        kwargs['title'] = 'новый продукт на складе'
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
@@ -645,7 +677,7 @@ class ConsumerCreateView(CreateView):
     success_url = reverse_lazy('warehouse:consumer_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'нового покупателя'
+        kwargs['title'] = 'нового покупателя'
         return super().get_context_data(**kwargs)
 
 
@@ -696,7 +728,7 @@ class OrderCreateView(CreateView):
     template_name = 'includes/create.html'
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый заказ'
+        kwargs['title'] = 'новый заказ'
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
@@ -719,6 +751,36 @@ class OrderDetailView(DetailView):
             order=self.object)
         context['history'] = self.object.history.all()[::-1]
         return context
+    
+    def render_to_response(self, context: Dict[str, Any], **response_kwargs: Any) -> HttpResponse:
+        if 'format' in self.request.GET and self.request.GET['format'] == 'csv':
+            filename = f'Заказ_{self.object.pk}_от_{now().strftime("%Y-%m-%d")}.csv'
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{quote(filename)}'
+
+            writer = csv.writer(response)
+            writer.writerow(["", "Покупатель", self.object.consumer.name])
+            writer.writerow(["", "Список продуктов в заказе"])
+            writer.writerow(["#", "Наименование товара", "Количество", "Вес кг.", "Цена"])
+
+            productinorder_list = context['productinorder_list']
+            for productinorder in productinorder_list:
+                writer.writerow(
+                    [productinorder.pk, productinorder.product.name, productinorder.quantity,productinorder.product.weight, productinorder.purchase_price, productinorder.product.retail_price])
+            writer.writerow([])
+            writer.writerow(["", "Вес заказа кг.", self.object.get_total_order_weight()])
+            writer.writerow([])
+            writer.writerow(["", "Итоговая стоимость заказа", self.object.get_total_order_cost_price()])
+            writer.writerow([])
+            writer.writerow(["", "История изменений статуса заказа"])
+            writer.writerow(["#", "Статус", "Дата"])
+            history = context['history']
+            for i in history:
+                writer.writerow([i.pk, i.get_status_display(), i.date])
+
+            return response
+
+        return super().render_to_response(context, **response_kwargs)
 
 
 class OrderUpdateView(UpdateView):
@@ -737,7 +799,7 @@ class OrderUpdateView(UpdateView):
                     None, 'Нельзя изменить статус заказа на "оплачен", т.к. он уже оплачен')
                 return super().form_invalid(form)
         if form.instance.status == 'shipped':
-            if form.isinstance.history.first().status != 'paid':
+            if form.instance.history.first().status != 'paid':
                 Order.objects.filter(pk=self.object.pk).update(
                     status='not_paid')
         return super().form_valid(form)
@@ -763,10 +825,9 @@ class ProductInOrderCreateView(CreateView):
     model = ProductInOrder
     form_class = ProductInOrderForm
     template_name = 'includes/create.html'
-    success_url = reverse_lazy('warehouse:productinorder_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый продукт в заказ'
+        kwargs['title'] = 'новый продукт в заказ'
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
@@ -818,7 +879,7 @@ class CostCreateView(CreateView):
     success_url = reverse_lazy('warehouse:balance_list')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        kwargs['object'] = 'новый расход'
+        kwargs['title'] = 'новый расход'
         return super().get_context_data(**kwargs)
 
 

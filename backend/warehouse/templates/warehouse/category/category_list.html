@@ -14,13 +14,10 @@
 <div class="row">
   <a
     href="{% url 'warehouse:category_create' %}"
-    class="waves-effect waves-light btn"
-    >Добавить</a
-  >
-  <a href="{% url 'warehouse:category_list' %}?format=csv"
-    class="waves-effect waves-light btn"
-    >Скачать товары в CSV</a
-  >
+    class="waves-effect waves-light btn">Добавить</a>
+  
+    <a href="{% url 'warehouse:category_list' %}?format=csv"
+    class="waves-effect waves-light btn" >Excell</a>
 </div>
 
 {% endblock %}

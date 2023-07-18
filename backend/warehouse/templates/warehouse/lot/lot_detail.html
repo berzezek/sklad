@@ -14,66 +14,62 @@
                 <div class="card-content white-text">
 
                     <div class="row">
-                        <div class="col s6">
-                            <p>Товаров в заказе</p>
+                        <div class="col s3">
+                            <p>Кол-во товаров в заказе</p>
                         </div>
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>{{ object.get_products_quantity|floatformat:"g" }}</p>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>Вес заказа</p>
                         </div>
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>{{ object.get_products_weight|floatformat:"g" }}</p>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>Сумма заказа</p>
                         </div>
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>{{ object.get_total_lot_purchase_price|floatformat:"g" }}</p>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>Сумма расходов</p>
                         </div>
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>{{ object.get_total_lot_amount_spent|floatformat:"g" }}</p>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>Итого</p>
                         </div>
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>{{ object.get_total|floatformat:"g" }}</p>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>Статус</p>
                         </div>
-                        <div class="col s6">
+                        <div class="col s3">
                             <p>{{ object.get_status_display }}</p>
                         </div>
                     </div>
                     <p>{{ object.description }}</p>
-                    {% if object.status == 'delivered_to_warehouse' %}
-                        <p class="red-text mb-2">Лот перемещен на склад. Все изменения не будут обработаны в
-                            автоматическом режиме!</p>
-                    {% endif %}
                 </div>
                 <div class="card-action">
                     <a href="{% url 'warehouse:lot_list' %}">Вернуться</a>
                     <a href="{% url 'warehouse:lot_update' object.pk %}">Изменить</a>
-                    <a href="{% url 'warehouse:productinlot_create' object.pk %}">Добавить товар</a>
-                    <a href="{% url 'warehouse:lotcost_create' object.pk %}">Дабавить расход</a>
                     <a href="{% url 'warehouse:lot_delete' object.pk %}">Удалить</a>
-                    <a href="{% url 'warehouse:lot_detail' object.pk %}?format=csv">Скачать в CSV</a>
+                    <a href="{% url 'warehouse:productinlot_create' object.pk %}">Товары</a>
+                    <a href="{% url 'warehouse:lotcost_create' object.pk %}">Расходы</a>
+                    <a href="{% url 'warehouse:lot_detail' object.pk %}?format=csv">Excell</a>
                 </div>
             </div>
         </div>
@@ -86,8 +82,6 @@
             </div>
             <div class="collapsible-body">
                 {% include 'warehouse/productinlot/productinlot_list.html' with object_list=productinlot_list detail_url='warehouse:productinlot_detail' %}
-
-
             </div>
         </li>
         <li>
@@ -113,10 +107,4 @@
 
 {% endblock %}
 
-{% block script %}
-    <script>
-        $(document).ready(function () {
-            $('.collapsible').collapsible();
-        });
-    </script>
-{% endblock %}
+

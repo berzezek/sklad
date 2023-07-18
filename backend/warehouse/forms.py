@@ -47,6 +47,17 @@ class ProductInLotForm(forms.ModelForm):
             'purchase_price',
             'description'
         )
+        
+
+class ProductInLotCreateForm(forms.ModelForm):
+    selected_objects = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+    quantities = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+    purchase_prices = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+    descriptions = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, required=False)
+
+    class Meta:
+        model = ProductInLot
+        fields = ['selected_objects', 'quantities', 'purchase_prices', 'descriptions']
 
 
 class LotCostForm(forms.ModelForm):
@@ -109,7 +120,7 @@ class OrderForm(forms.ModelForm):
     STATUS_CHOICES = [
         ('new', 'новый'),
         ('paid', 'оплачен'),
-        ('delivered', 'доставлен'),
+        ('shipped', 'отгружен'),
     ]
 
     status = forms.ChoiceField(
@@ -127,7 +138,7 @@ class OrderUpdateForm(forms.ModelForm):
 
     STATUS_CHOICES = [
         ('paid', 'оплачен'),
-        ('delivered', 'доставлен'),
+        ('shipped', 'отгружен'),
     ]
 
     status = forms.ChoiceField(
